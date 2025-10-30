@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="card">
+    <h2>Submit Injury Report</h2>
+    {% if success %}<p style="color:green">Report saved.</p>{% endif %}
+    <form method="post" id="injury-form">{% csrf_token %}
+      <div class="form-row">
+        <div>
+          <label>{{ form.player.label }}</label>
+          {{ form.player }}
+        </div>
+        <div>
+          <label>{{ form.injury_date.label }}</label>
+          {{ form.injury_date }}
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label>{{ form.body_part.label }}</label>
+          {{ form.body_part }}
+        </div>
+        <div>
+          <label>{{ form.severity.label }}</label>
+          {{ form.severity }}
+        </div>
+      </div>
+
+      <p>
+        <label>{{ form.diagnosis.label }}</label>
+        {{ form.diagnosis }}
+      </p>
+
+      <p>
+        <label>{{ form.mechanism.label }}</label>
+        {{ form.mechanism }}
+      </p>
+
+      <p>
+        <label>{{ form.imaging_required.label }}</label>
+        {{ form.imaging_required }}
+      </p>
+
+      <div id="imaging-block" style="display:none;margin-left:6px">
+        <div class="form-row">
+          <div>
+            <label>{{ form.imaging_type.label }}</label>
+            {{ form.imaging_type }}
+          </div>
+          <div>
+            <label>{{ form.imaging_details.label }}</label>
+            {{ form.imaging_details }}
+          </div>
+        </div>
+      </div>
+
+      <p>
+        <label>{{ form.treatment_given.label }}</label>
+        {{ form.treatment_given }}
+      </p>
+
+      <p>
+        <label>{{ form.recommended_followup.label }}</label>
+        {{ form.recommended_followup }}
+      </p>
+
+      <div class="form-row">
+        <div>
+          <label>{{ form.time_lost_days.label }}</label>
+          {{ form.time_lost_days }}
+        </div>
+        <div>
+          <label>{{ form.expected_return_date.label }}</label>
+          {{ form.expected_return_date }}
+        </div>
+      </div>
+
+      <p>
+        <label>{{ form.restrictions.label }}</label>
+        {{ form.restrictions }}
+      </p>
+
+      <p>
+        <label>{{ form.notes.label }}</label>
+        {{ form.notes }}
+      </p>
+
+      <div style="margin-top:8px">
+        <button type="submit">Submit</button>
+      </div>
+    </form>
+
+    {% block scripts %}
+    <script>
+      (function(){
+        const imagingCheckbox = document.querySelector('[name="imaging_required"]');
+        const imagingBlock = document.getElementById('imaging-block');
+        function toggleImaging(){
+          if(imagingCheckbox && imagingCheckbox.checked){ imagingBlock.style.display='block'; } else { imagingBlock.style.display='none'; }
+        }
+        if(imagingCheckbox){ imagingCheckbox.addEventListener('change', toggleImaging); toggleImaging(); }
+
+        // basic client side validation
+        const form = document.getElementById('injury-form');
+        form.addEventListener('submit', function(e){
+          const player = form.querySelector('[name="player"]');
+          const injury_date = form.querySelector('[name="injury_date"]');
+          const diagnosis = form.querySelector('[name="diagnosis"]');
+          const severity = form.querySelector('[name="severity"]');
+          let ok = true; let msgs = [];
+          if(player && !player.value) { ok=false; msgs.push('Player is required'); }
+          if(injury_date && !injury_date.value) { ok=false; msgs.push('Injury date is required'); }
+          if(diagnosis && !diagnosis.value.trim()) { ok=false; msgs.push('Diagnosis is required'); }
+          if(severity && !severity.value) { ok=false; msgs.push('Severity is required'); }
+          if(!ok){ e.preventDefault(); alert(msgs.join('\n')); }
+        });
+      })();
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJ+Y3fZ6mY6k2bQ5Yk6Q5Z5eQ5s6b5Q5Z5s6Q=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+      <script>
+        (function(){
+          // init Select2 on player select with AJAX
+          const playerSelect = document.querySelector('[name="player"]');
+          if(playerSelect){
+            $(playerSelect).select2({
+              placeholder: 'Search for player',
+              allowClear: true,
+              ajax: {
+                url: '{% url "players_ajax" %}',
+                dataType: 'json',
+                delay: 250,
+                data: function(params){ return { q: params.term } },
+                processResults: function(data){ return data; }
+              },
+              width: '100%'
+            });
+          }
+        })();
+      </script>
+      {% endblock %}
+    </div>
+{% endblock %}

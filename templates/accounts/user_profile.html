@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile - Lancer Injury Tracking{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="card-title mb-0">
+                            <i class="bi bi-person-circle me-2"></i>My Profile
+                        </h2>
+                        <span class="badge bg-{% if user.role == 'ADMIN' %}danger{% elif user.role == 'COACH' %}primary{% elif user.role == 'DOCTOR' %}success{% else %}info{% endif %} fs-6">
+                            {{ user.get_role_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Profile Picture Section -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    {% if user.profile_picture %}
+                                        <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="rounded-circle mb-3 shadow" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid white;">
+                                    {% else %}
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mb-3 shadow" style="width: 150px; height: 150px; margin: 0 auto; border: 4px solid white;">
+                                            <i class="bi bi-person-fill text-muted" style="font-size: 4rem;"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="mb-2">
+                                        <input type="file" name="profile_picture" accept="image/*" class="form-control form-control-sm" id="profilePictureInput">
+                                        <label for="profilePictureInput" class="btn btn-outline-primary btn-sm mt-2">
+                                            <i class="bi bi-camera me-1"></i>Change Photo
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">JPG, PNG or GIF. Max 5MB.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="d-flex align-items-center mb-3">
+                                    <h4 class="mb-0 me-3">{{ user.get_full_name }}</h4>
+                                    <span class="badge bg-{% if user.role == 'ADMIN' %}danger{% elif user.role == 'COACH' %}primary{% elif user.role == 'DOCTOR' %}success{% else %}info{% endif %} fs-6">
+                                        {{ user.get_role_display }}
+                                    </span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="text-muted mb-2"><i class="bi bi-envelope me-1"></i>{{ user.email }}</p>
+                                        {% if user.phone %}
+                                            <p class="text-muted mb-2"><i class="bi bi-telephone me-1"></i>{{ user.phone }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if user.team %}
+                                            <p class="text-muted mb-2"><i class="bi bi-people me-1"></i>{{ user.team.name }}</p>
+                                        {% endif %}
+                                        {% if user.get_age %}
+                                            <p class="text-muted mb-2"><i class="bi bi-calendar me-1"></i>{{ user.get_age }} years old</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-person me-2"></i>Basic Information
+                                </h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name *</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small">{{ form.first_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name *</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small">{{ form.last_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email *</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small">{{ form.email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <div class="text-danger small">{{ form.phone.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <div class="text-danger small">{{ form.gender.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}
+                                    <div class="text-danger small">{{ form.date_of_birth.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Address Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-geo-alt me-2"></i>Address Information
+                                </h5>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                                {{ form.address }}
+                                {% if form.address.errors %}
+                                    <div class="text-danger small">{{ form.address.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                                {{ form.city }}
+                                {% if form.city.errors %}
+                                    <div class="text-danger small">{{ form.city.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.state.id_for_label }}" class="form-label">State</label>
+                                {{ form.state }}
+                                {% if form.state.errors %}
+                                    <div class="text-danger small">{{ form.state.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.zip_code.id_for_label }}" class="form-label">ZIP Code</label>
+                                {{ form.zip_code }}
+                                {% if form.zip_code.errors %}
+                                    <div class="text-danger small">{{ form.zip_code.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
+                                {{ form.country }}
+                                {% if form.country.errors %}
+                                    <div class="text-danger small">{{ form.country.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Emergency Contact Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-telephone me-2"></i>Emergency Contact
+                                </h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact_name.id_for_label }}" class="form-label">Emergency Contact Name</label>
+                                {{ form.emergency_contact_name }}
+                                {% if form.emergency_contact_name.errors %}
+                                    <div class="text-danger small">{{ form.emergency_contact_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact_relationship.id_for_label }}" class="form-label">Relationship</label>
+                                {{ form.emergency_contact_relationship }}
+                                {% if form.emergency_contact_relationship.errors %}
+                                    <div class="text-danger small">{{ form.emergency_contact_relationship.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact_phone.id_for_label }}" class="form-label">Emergency Contact Phone</label>
+                                {{ form.emergency_contact_phone }}
+                                {% if form.emergency_contact_phone.errors %}
+                                    <div class="text-danger small">{{ form.emergency_contact_phone.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact_email.id_for_label }}" class="form-label">Emergency Contact Email</label>
+                                {{ form.emergency_contact_email }}
+                                {% if form.emergency_contact_email.errors %}
+                                    <div class="text-danger small">{{ form.emergency_contact_email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Medical Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-heart-pulse me-2"></i>Medical Information
+                                </h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.blood_type.id_for_label }}" class="form-label">Blood Type</label>
+                                {{ form.blood_type }}
+                                {% if form.blood_type.errors %}
+                                    <div class="text-danger small">{{ form.blood_type.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.medical_conditions.id_for_label }}" class="form-label">Medical Conditions</label>
+                                {{ form.medical_conditions }}
+                                {% if form.medical_conditions.errors %}
+                                    <div class="text-danger small">{{ form.medical_conditions.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.medications.id_for_label }}" class="form-label">Current Medications</label>
+                                {{ form.medications }}
+                                {% if form.medications.errors %}
+                                    <div class="text-danger small">{{ form.medications.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.allergies.id_for_label }}" class="form-label">Known Allergies</label>
+                                {{ form.allergies }}
+                                {% if form.allergies.errors %}
+                                    <div class="text-danger small">{{ form.allergies.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-info-circle me-2"></i>Additional Information
+                                </h5>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.bio.id_for_label }}" class="form-label">Bio / Personal Notes</label>
+                                {{ form.bio }}
+                                {% if form.bio.errors %}
+                                    <div class="text-danger small">{{ form.bio.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Role-Specific Information -->
+                        {% if role_profile %}
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="border-bottom pb-2 mb-3">
+                                        <i class="bi bi-award me-2"></i>{{ user.get_role_display }} Information
+                                    </h5>
+                                </div>
+                                {% if user.role == 'PLAYER' %}
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Jersey Number</label>
+                                        <input type="text" class="form-control" value="{{ role_profile.number|default:'Not set' }}" readonly>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Position</label>
+                                        <input type="text" class="form-control" value="{{ role_profile.position|default:'Not set' }}" readonly>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Date of Birth (Profile)</label>
+                                        <input type="text" class="form-control" value="{{ role_profile.dob|default:'Not set' }}" readonly>
+                                    </div>
+                                {% elif user.role == 'COACH' %}
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Coaching Experience</label>
+                                        <input type="text" class="form-control" value="{{ role_profile.coaching_experience|default:'Not set' }} years" readonly>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Specialization</label>
+                                        <input type="text" class="form-control" value="{{ role_profile.specialization|default:'Not set' }}" readonly>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Certification</label>
+                                        <input type="text" class="form-control" value="{{ role_profile.certification|default:'Not set' }}" readonly>
+                                    </div>
+                                {% elif user.role == 'DOCTOR' %}
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Medical License</label>
+                                        <input type="text" class="form-control" value="{{ role_profile.medical_license|default:'Not set' }}" readonly>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Specialization</label>
+                                        <input type="text" class="form-control" value="{{ role_profile.specialization|default:'Not set' }}" readonly>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Years of Experience</label>
+                                        <input type="text" class="form-control" value="{{ role_profile.years_experience|default:'Not set' }} years" readonly>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Submit Button -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-2"></i>Update Profile
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #374151;
+}
+
+.border-bottom {
+    border-color: #e5e7eb !important;
+}
+
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border: none;
+    box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.49);
+}
+
+.form-control {
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const profilePictureInput = document.getElementById('profilePictureInput');
+    const profilePicture = document.querySelector('img[alt="Profile Picture"]') || document.querySelector('.rounded-circle.bg-light');
+    
+    if (profilePictureInput && profilePicture) {
+        profilePictureInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (profilePicture.tagName === 'IMG') {
+                        profilePicture.src = e.target.result;
+                    } else {
+                        // Replace the placeholder div with an img element
+                        const newImg = document.createElement('img');
+                        newImg.src = e.target.result;
+                        newImg.alt = 'Profile Picture';
+                        newImg.className = 'rounded-circle mb-3 shadow';
+                        newImg.style.cssText = 'width: 150px; height: 150px; object-fit: cover; border: 4px solid white;';
+                        profilePicture.parentNode.replaceChild(newImg, profilePicture);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

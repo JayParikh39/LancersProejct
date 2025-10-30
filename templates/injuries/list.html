@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="card">
+    <h2>Injury Reports</h2>
+    <ul>
+      {% for r in reports %}
+        <li>{{ r.date }} - {{ r.player.get_full_name }} - {{ r.injury_type }} - {{ r.severity }}</li>
+      {% empty %}
+        <li>No reports found.</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Complete Registration - Lancer Injury Tracking</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(160deg, #0b1f3b 0%, #122a4f 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .main-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .widget-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .widget-icon.primary {
+            background: linear-gradient(135deg, #0b76ef 0%, #1164da 100%);
+            color: white;
+        }
+        
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0b76ef 0%, #1164da 100%);
+            box-shadow: 0 4px 14px 0 rgba(17, 100, 218, 0.39);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.49);
+        }
+        
+        .form-control {
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #0b76ef;
+            box-shadow: 0 0 0 3px rgba(11, 118, 239, 0.15);
+        }
+        
+        .alert {
+            border-radius: 0.75rem;
+            border: none;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+        
+        /* Background doodles */
+        .doodle {
+            position: fixed;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        .doodle-1 {
+            top: 10%;
+            left: 10%;
+            font-size: 3rem;
+            color: #3b82f6;
+        }
+        
+        .doodle-2 {
+            top: 20%;
+            right: 15%;
+            font-size: 2.5rem;
+            color: #ef4444;
+        }
+        
+        .doodle-3 {
+            bottom: 20%;
+            left: 15%;
+            font-size: 2rem;
+            color: #10b981;
+        }
+        
+        .doodle-4 {
+            bottom: 10%;
+            right: 10%;
+            font-size: 2.5rem;
+            color: #f59e0b;
+        }
+        
+        .border-bottom {
+            border-color: #e5e7eb !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Background doodles -->
+        <div class="doodle doodle-1">🏥</div>
+        <div class="doodle doodle-2">🏒</div>
+        <div class="doodle doodle-3">📊</div>
+        <div class="doodle doodle-4">⚕️</div>
+        
+        <div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <div class="widget-icon primary mx-auto mb-3">
+              <i class="bi bi-person-check"></i>
+            </div>
+            <h2 class="card-title">Complete Your Registration</h2>
+            <p class="text-muted">Welcome, {{ user.get_full_name }}!</p>
+            <div class="alert alert-success">
+              <i class="bi bi-shield-check me-2"></i>
+              <strong>Role Assigned:</strong> {{ user.get_role_display }}
+            </div>
+          </div>
+
+          {% if user.role == 'PLAYER' %}
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              <strong>Complete Your Player Profile</strong><br>
+              Please provide all required information marked with ⭐ to complete your registration.
+            </div>
+            
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+                
+                <!-- Personal Information -->
+                <div class="row mb-4">
+                  <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                      <i class="bi bi-person me-2"></i>Personal Information
+                    </h5>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.preferred_name.id_for_label }}" class="form-label">Preferred Name</label>
+                    {{ profile_form.preferred_name }}
+                    {% if profile_form.preferred_name.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.preferred_name.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.alternate_email.id_for_label }}" class="form-label">Alternate Email</label>
+                    {{ profile_form.alternate_email }}
+                    {% if profile_form.alternate_email.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.alternate_email.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.student_id.id_for_label }}" class="form-label">⭐ Student ID Number</label>
+                    {{ profile_form.student_id }}
+                    {% if profile_form.student_id.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.student_id.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.citizenship.id_for_label }}" class="form-label">⭐ Citizenship</label>
+                    {{ profile_form.citizenship }}
+                    {% if profile_form.citizenship.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.citizenship.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.photo_id.id_for_label }}" class="form-label">Photo ID Upload (Optional)</label>
+                    {{ profile_form.photo_id }}
+                    {% if profile_form.photo_id.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.photo_id.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Local Address -->
+                <div class="row mb-4">
+                  <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                      <i class="bi bi-house me-2"></i>Local Address (Current Residence)
+                    </h5>
+                  </div>
+                  <div class="col-12 mb-3">
+                    <label for="{{ profile_form.local_street_address.id_for_label }}" class="form-label">⭐ Street Address</label>
+                    {{ profile_form.local_street_address }}
+                    {% if profile_form.local_street_address.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.local_street_address.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="{{ profile_form.local_city.id_for_label }}" class="form-label">⭐ City</label>
+                    {{ profile_form.local_city }}
+                    {% if profile_form.local_city.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.local_city.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="{{ profile_form.local_province.id_for_label }}" class="form-label">⭐ Province</label>
+                    {{ profile_form.local_province }}
+                    {% if profile_form.local_province.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.local_province.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="{{ profile_form.local_postal_code.id_for_label }}" class="form-label">⭐ Postal Code</label>
+                    {{ profile_form.local_postal_code }}
+                    {% if profile_form.local_postal_code.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.local_postal_code.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Permanent Address -->
+                <div class="row mb-4">
+                  <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                      <i class="bi bi-geo-alt me-2"></i>Permanent Address
+                    </h5>
+                  </div>
+                  <div class="col-12 mb-3">
+                    <label for="{{ profile_form.permanent_street_address.id_for_label }}" class="form-label">⭐ Street Address</label>
+                    {{ profile_form.permanent_street_address }}
+                    {% if profile_form.permanent_street_address.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.permanent_street_address.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="{{ profile_form.permanent_city.id_for_label }}" class="form-label">⭐ City</label>
+                    {{ profile_form.permanent_city }}
+                    {% if profile_form.permanent_city.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.permanent_city.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="{{ profile_form.permanent_province_state.id_for_label }}" class="form-label">⭐ Province/State</label>
+                    {{ profile_form.permanent_province_state }}
+                    {% if profile_form.permanent_province_state.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.permanent_province_state.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="{{ profile_form.permanent_postal_zip_code.id_for_label }}" class="form-label">⭐ Postal/ZIP Code</label>
+                    {{ profile_form.permanent_postal_zip_code }}
+                    {% if profile_form.permanent_postal_zip_code.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.permanent_postal_zip_code.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="{{ profile_form.permanent_country.id_for_label }}" class="form-label">⭐ Country</label>
+                    {{ profile_form.permanent_country }}
+                    {% if profile_form.permanent_country.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.permanent_country.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Sports & Team Information -->
+                <div class="row mb-4">
+                  <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                      <i class="bi bi-trophy me-2"></i>Sports & Team Information
+                    </h5>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.sport_gender_category.id_for_label }}" class="form-label">⭐ Sport & Gender Category</label>
+                    {{ profile_form.sport_gender_category }}
+                    {% if profile_form.sport_gender_category.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.sport_gender_category.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="{{ profile_form.height_feet.id_for_label }}" class="form-label">⭐ Height (Feet)</label>
+                    {{ profile_form.height_feet }}
+                    {% if profile_form.height_feet.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.height_feet.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="{{ profile_form.height_inches.id_for_label }}" class="form-label">⭐ Height (Inches)</label>
+                    {{ profile_form.height_inches }}
+                    {% if profile_form.height_inches.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.height_inches.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.weight_lbs.id_for_label }}" class="form-label">⭐ Weight (lbs)</label>
+                    {{ profile_form.weight_lbs }}
+                    {% if profile_form.weight_lbs.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.weight_lbs.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.hometown.id_for_label }}" class="form-label">⭐ Hometown</label>
+                    {{ profile_form.hometown }}
+                    {% if profile_form.hometown.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.hometown.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.high_school.id_for_label }}" class="form-label">High School</label>
+                    {{ profile_form.high_school }}
+                    {% if profile_form.high_school.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.high_school.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.high_school_coach_name.id_for_label }}" class="form-label">High School Coach Name</label>
+                    {{ profile_form.high_school_coach_name }}
+                    {% if profile_form.high_school_coach_name.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.high_school_coach_name.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.position_event.id_for_label }}" class="form-label">⭐ Position/Event</label>
+                    {{ profile_form.position_event }}
+                    {% if profile_form.position_event.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.position_event.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.previous_club_team.id_for_label }}" class="form-label">⭐ Previous Club/Team</label>
+                    {{ profile_form.previous_club_team }}
+                    {% if profile_form.previous_club_team.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.previous_club_team.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.club_team_coach_name.id_for_label }}" class="form-label">Club/Team Coach Name</label>
+                    {{ profile_form.club_team_coach_name }}
+                    {% if profile_form.club_team_coach_name.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.club_team_coach_name.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.family_member_oua_usports.id_for_label }}" class="form-label">Family Member in OUA/U SPORTS</label>
+                    {{ profile_form.family_member_oua_usports }}
+                    {% if profile_form.family_member_oua_usports.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.family_member_oua_usports.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-12 mb-3">
+                    <label for="{{ profile_form.family_member_details.id_for_label }}" class="form-label">Family Member Details</label>
+                    {{ profile_form.family_member_details }}
+                    {% if profile_form.family_member_details.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.family_member_details.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ team_form.team.id_for_label }}" class="form-label">⭐ Team Assignment</label>
+                    {{ team_form.team }}
+                    {% if team_form.team.errors %}
+                      <div class="invalid-feedback d-block">{{ team_form.team.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Academic Information -->
+                <div class="row mb-4">
+                  <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                      <i class="bi bi-book me-2"></i>Academic Information
+                    </h5>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.school_type_last_year.id_for_label }}" class="form-label">⭐ Type of School Attended Last Year</label>
+                    {{ profile_form.school_type_last_year }}
+                    {% if profile_form.school_type_last_year.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.school_type_last_year.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.completed_18_credits_last_year.id_for_label }}" class="form-label">⭐ Completed 18+ Credits Last Year</label>
+                    {{ profile_form.completed_18_credits_last_year }}
+                    {% if profile_form.completed_18_credits_last_year.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.completed_18_credits_last_year.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.academic_restrictions.id_for_label }}" class="form-label">⭐ Academic Restrictions</label>
+                    {{ profile_form.academic_restrictions }}
+                    {% if profile_form.academic_restrictions.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.academic_restrictions.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.faculty.id_for_label }}" class="form-label">⭐ Faculty</label>
+                    {{ profile_form.faculty }}
+                    {% if profile_form.faculty.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.faculty.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.program_of_study.id_for_label }}" class="form-label">⭐ Program of Study</label>
+                    {{ profile_form.program_of_study }}
+                    {% if profile_form.program_of_study.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.program_of_study.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.student_status.id_for_label }}" class="form-label">⭐ Student Status</label>
+                    {{ profile_form.student_status }}
+                    {% if profile_form.student_status.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.student_status.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.year_of_study.id_for_label }}" class="form-label">⭐ Year of Study (1-10)</label>
+                    {{ profile_form.year_of_study }}
+                    {% if profile_form.year_of_study.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.year_of_study.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.registered_9_credits_per_term.id_for_label }}" class="form-label">⭐ Registered for 9+ Credits per Term</label>
+                    {{ profile_form.registered_9_credits_per_term }}
+                    {% if profile_form.registered_9_credits_per_term.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.registered_9_credits_per_term.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="{{ profile_form.graduating_this_year.id_for_label }}" class="form-label">⭐ Graduating This Year</label>
+                    {{ profile_form.graduating_this_year }}
+                    {% if profile_form.graduating_this_year.errors %}
+                      <div class="invalid-feedback d-block">{{ profile_form.graduating_this_year.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-2"></i>Complete Registration
+                  </button>
+                </div>
+              </form>
+              
+            {% elif user.role == 'COACH' %}
+              <form method="post">
+                {% csrf_token %}
+                <div class="row mb-4">
+                <div class="col-12">
+                  <h6 class="text-primary mb-3">
+                    <i class="bi bi-people me-2"></i>Coach Information
+                  </h6>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="{{ profile_form.coaching_experience.id_for_label }}" class="form-label">Years of Experience</label>
+                  {{ profile_form.coaching_experience }}
+                  {% if profile_form.coaching_experience.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in profile_form.coaching_experience.errors %}{{ error }}{% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-8 mb-3">
+                  <label for="{{ profile_form.specialization.id_for_label }}" class="form-label">Specialization</label>
+                  {{ profile_form.specialization }}
+                  {% if profile_form.specialization.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in profile_form.specialization.errors %}{{ error }}{% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ profile_form.certification.id_for_label }}" class="form-label">Certifications</label>
+                  {{ profile_form.certification }}
+                  {% if profile_form.certification.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in profile_form.certification.errors %}{{ error }}{% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ team_form.team.id_for_label }}" class="form-label">Team</label>
+                  {{ team_form.team }}
+                  {% if team_form.team.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in team_form.team.errors %}{{ error }}{% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-check-circle me-2"></i>Complete Registration
+                </button>
+              </div>
+              </form>
+              
+            {% elif user.role == 'DOCTOR' %}
+              <form method="post">
+                {% csrf_token %}
+                <div class="row mb-4">
+                  <div class="col-12">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-heart-pulse me-2"></i>Medical Information
+                    </h6>
+                  </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ profile_form.medical_license.id_for_label }}" class="form-label">Medical License Number</label>
+                  {{ profile_form.medical_license }}
+                  {% if profile_form.medical_license.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in profile_form.medical_license.errors %}{{ error }}{% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ profile_form.specialization.id_for_label }}" class="form-label">Medical Specialization</label>
+                  {{ profile_form.specialization }}
+                  {% if profile_form.specialization.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in profile_form.specialization.errors %}{{ error }}{% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="{{ profile_form.years_experience.id_for_label }}" class="form-label">Years of Experience</label>
+                  {{ profile_form.years_experience }}
+                  {% if profile_form.years_experience.errors %}
+                    <div class="invalid-feedback d-block">
+                      {% for error in profile_form.years_experience.errors %}{{ error }}{% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-check-circle me-2"></i>Complete Registration
+                </button>
+              </div>
+              </form>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

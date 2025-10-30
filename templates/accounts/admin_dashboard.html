@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Lancer Injury Tracking{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="widget-icon primary me-3">
+              <i class="bi bi-gear-fill"></i>
+            </div>
+            <div>
+              <h1 class="card-title mb-1">Admin Dashboard</h1>
+              <p class="text-muted mb-0">Comprehensive overview of the injury tracking system</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon primary me-3">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">{{ total_players }}</h3>
+            <p class="text-muted mb-0">Total Players</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon danger me-3">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">{{ total_injuries }}</h3>
+            <p class="text-muted mb-0">Total Injuries</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon warning me-3">
+            <i class="bi bi-clock-fill"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">{{ active_injuries }}</h3>
+            <p class="text-muted mb-0">Active Injuries</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon success me-3">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">{{ recovered_injuries }}</h3>
+            <p class="text-muted mb-0">Recovered</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Statistics -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-graph-up me-2"></i>Team Statistics
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for team_stat in team_stats %}
+            <div class="col-lg-4 col-md-6 mb-3">
+              <div class="card border-0 bg-light">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="card-title">{{ team_stat.team.name }}</h6>
+                      <p class="text-muted small mb-1">{{ team_stat.team.get_gender_display }} Team</p>
+                    </div>
+                    <div class="text-end">
+                      <span class="badge bg-primary me-1">{{ team_stat.players }} Players</span>
+                      <span class="badge bg-danger me-1">{{ team_stat.active_injuries }} Active</span>
+                      <span class="badge bg-success">{{ team_stat.total_injuries }} Total</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Injuries -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-clock-history me-2"></i>Recent Injuries
+          </h5>
+          <a href="{% url 'tracking:injury_list' %}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-arrow-right me-1"></i>View All
+          </a>
+        </div>
+        <div class="card-body">
+          {% if recent_injuries %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Player</th>
+                    <th>Injury Type</th>
+                    <th>Body Part</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for injury in recent_injuries %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar-sm bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
+                          {{ injury.player.first_name|first|upper }}{{ injury.player.last_name|first|upper }}
+                        </div>
+                        <div>
+                          <div class="fw-bold">{{ injury.player.get_full_name }}</div>
+                          <small class="text-muted">{{ injury.player.team.name }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ injury.injury_type.name }}</td>
+                    <td>{{ injury.body_part.name }}</td>
+                    <td>
+                      <span class="badge" style="background-color: {{ injury.severity.color_code }}; color: white;">
+                        {{ injury.severity.name }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="status-badge status-{{ injury.status|lower }}">
+                        {{ injury.get_status_display }}
+                      </span>
+                    </td>
+                    <td>{{ injury.injury_date|date:"M d, Y" }}</td>
+                    <td>
+                      <a href="{% url 'tracking:injury_detail' injury.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i>View
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-clipboard-data text-muted" style="font-size: 3rem;"></i>
+              <p class="text-muted mt-2">No recent injuries found</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Charts -->
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-pie-chart me-2"></i>Injury Types Distribution
+          </h5>
+        </div>
+        <div class="card-body">
+          <canvas id="injuryTypeChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-bar-chart me-2"></i>Body Parts Affected
+          </h5>
+        </div>
+        <div class="card-body">
+          <canvas id="bodyPartChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-lightning-fill me-2"></i>Quick Actions
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-lg-3 col-md-6 mb-3">
+              <a href="{% url 'tracking:injury_create' %}" class="btn btn-primary w-100">
+                <i class="bi bi-plus-circle me-2"></i>Report New Injury
+              </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <a href="{% url 'tracking:analytics' %}" class="btn btn-info w-100">
+                <i class="bi bi-graph-up me-2"></i>View Analytics
+              </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <a href="/admin/" class="btn btn-warning w-100">
+                <i class="bi bi-gear me-2"></i>System Admin
+              </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <a href="{% url 'register' %}" class="btn btn-success w-100">
+                <i class="bi bi-person-plus me-2"></i>Add New User
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Injury Type Chart
+  const injuryTypeCtx = document.getElementById('injuryTypeChart').getContext('2d');
+  const injuryTypeData = {{ injury_type_stats|safe }};
+  
+  new Chart(injuryTypeCtx, {
+    type: 'doughnut',
+    data: {
+      labels: injuryTypeData.map(item => item.injury_type__name),
+      datasets: [{
+        data: injuryTypeData.map(item => item.count),
+        backgroundColor: [
+          '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+
+  // Body Part Chart
+  const bodyPartCtx = document.getElementById('bodyPartChart').getContext('2d');
+  const bodyPartData = {{ body_part_stats|safe }};
+  
+  new Chart(bodyPartCtx, {
+    type: 'bar',
+    data: {
+      labels: bodyPartData.map(item => item.body_part__name),
+      datasets: [{
+        label: 'Injuries',
+        data: bodyPartData.map(item => item.count),
+        backgroundColor: '#3b82f6',
+        borderColor: '#1d4ed8',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

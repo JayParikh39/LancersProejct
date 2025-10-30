@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Dashboard - Lancer Injury Tracking{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="widget-icon primary me-3">
+              <i class="bi bi-person-fill"></i>
+            </div>
+            <div>
+              <h1 class="card-title mb-1">My Dashboard</h1>
+              <p class="text-muted mb-0">Welcome back, {{ user.get_full_name }}!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Personal Stats -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon primary me-3">
+            <i class="bi bi-clipboard-data"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">{{ total_injuries }}</h3>
+            <p class="text-muted mb-0">Total Injuries</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon warning me-3">
+            <i class="bi bi-exclamation-triangle"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">{{ active_injuries|length }}</h3>
+            <p class="text-muted mb-0">Active Injuries</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon success me-3">
+            <i class="bi bi-check-circle"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">{{ avg_recovery_time|floatformat:0|default:"0" }}</h3>
+            <p class="text-muted mb-0">Avg Recovery (days)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon info me-3">
+            <i class="bi bi-heart-pulse"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">
+              {% if active_injuries %}
+                <span class="text-warning">Injured</span>
+              {% else %}
+                <span class="text-success">Healthy</span>
+              {% endif %}
+            </h3>
+            <p class="text-muted mb-0">Current Status</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Status -->
+  {% if active_injuries %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-warning">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Current Active Injuries
+          </h5>
+        </div>
+        <div class="card-body">
+          {% for injury in active_injuries %}
+          <div class="alert alert-warning mb-3">
+            <div class="row">
+              <div class="col-md-8">
+                <h6 class="alert-heading">
+                  <i class="bi bi-activity me-2"></i>{{ injury.injury_type.name }}
+                </h6>
+                <p class="mb-2">
+                  <strong>Body Part:</strong> {{ injury.body_part.name }}<br>
+                  <strong>Severity:</strong> 
+                  <span class="badge" style="background-color: {{ injury.severity.color_code }}; color: white;">
+                    {{ injury.severity.name }}
+                  </span><br>
+                  <strong>Injury Date:</strong> {{ injury.injury_date|date:"F d, Y" }}<br>
+                  <strong>Days Since Injury:</strong> {{ injury.days_since_injury }} days
+                </p>
+                {% if injury.description %}
+                  <p class="mb-2"><strong>Description:</strong> {{ injury.description }}</p>
+                {% endif %}
+                {% if injury.treatment_notes %}
+                  <p class="mb-0"><strong>Treatment Notes:</strong> {{ injury.treatment_notes }}</p>
+                {% endif %}
+              </div>
+              <div class="col-md-4 text-end">
+                <div class="mb-2">
+                  <span class="status-badge status-{{ injury.status|lower }}">
+                    {{ injury.get_status_display }}
+                  </span>
+                </div>
+                {% if injury.estimated_recovery_time %}
+                  <small class="text-muted">
+                    Est. Recovery: {{ injury.estimated_recovery_time }} days
+                  </small>
+                {% endif %}
+                {% if injury.follow_up_date %}
+                  <br><small class="text-info">
+                    Next Follow-up: {{ injury.follow_up_date|date:"M d, Y" }}
+                  </small>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-success">
+        <div class="card-header bg-success text-white">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-check-circle-fill me-2"></i>Health Status
+          </h5>
+        </div>
+        <div class="card-body text-center">
+          <i class="bi bi-heart-pulse text-success" style="font-size: 4rem;"></i>
+          <h4 class="text-success mt-3">You're Healthy!</h4>
+          <p class="text-muted">No active injuries. Keep up the great work!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Injury History -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-clock-history me-2"></i>My Injury History
+          </h5>
+          <span class="badge bg-primary">{{ injuries|length }} Total</span>
+        </div>
+        <div class="card-body">
+          {% if injuries %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Injury Type</th>
+                    <th>Body Part</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Recovery Time</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for injury in injuries %}
+                  <tr>
+                    <td>{{ injury.injury_date|date:"M d, Y" }}</td>
+                    <td>{{ injury.injury_type.name }}</td>
+                    <td>{{ injury.body_part.name }}</td>
+                    <td>
+                      <span class="badge" style="background-color: {{ injury.severity.color_code }}; color: white;">
+                        {{ injury.severity.name }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="status-badge status-{{ injury.status|lower }}">
+                        {{ injury.get_status_display }}
+                      </span>
+                    </td>
+                    <td>
+                      {% if injury.actual_recovery_time %}
+                        {{ injury.actual_recovery_time }} days
+                      {% elif injury.estimated_recovery_time %}
+                        <span class="text-muted">Est: {{ injury.estimated_recovery_time }} days</span>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <a href="{% url 'tracking:injury_detail' injury.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i>View Details
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-clipboard-data text-muted" style="font-size: 3rem;"></i>
+              <p class="text-muted mt-2">No injury history found</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recovery Progress -->
+  {% if active_injuries %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-graph-up me-2"></i>Recovery Progress
+          </h5>
+        </div>
+        <div class="card-body">
+          {% for injury in active_injuries %}
+          <div class="mb-4">
+            <h6>{{ injury.injury_type.name }} - {{ injury.body_part.name }}</h6>
+            <div class="progress mb-2" style="height: 8px;">
+              {% if injury.estimated_recovery_time %}
+                {% widthratio injury.days_since_injury injury.estimated_recovery_time 100 as progress_percent %}
+                <div class="progress-bar bg-warning" role="progressbar" 
+                     style="width: {% if progress_percent > 100 %}100{% else %}{{ progress_percent }}{% endif %}%">
+                </div>
+              {% else %}
+                <div class="progress-bar bg-info" role="progressbar" style="width: 50%"></div>
+              {% endif %}
+            </div>
+            <small class="text-muted">
+              {{ injury.days_since_injury }} days since injury
+              {% if injury.estimated_recovery_time %}
+                ({{ injury.estimated_recovery_time }} days estimated)
+              {% endif %}
+            </small>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Quick Actions -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-lightning-fill me-2"></i>Quick Actions
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-lg-3 col-md-6 mb-3">
+              <a href="{% url 'profile' %}" class="btn btn-primary w-100">
+                <i class="bi bi-person me-2"></i>Update Profile
+              </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <a href="{% url 'tracking:injury_list' %}" class="btn btn-info w-100">
+                <i class="bi bi-clipboard-data me-2"></i>View All Injuries
+              </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <a href="{% url 'tracking:analytics' %}" class="btn btn-warning w-100">
+                <i class="bi bi-graph-up me-2"></i>My Analytics
+              </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+              <a href="{% url 'logout' %}" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-box-arrow-right me-2"></i>Logout
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .status-active {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  .status-recovering {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  
+  .status-recovered {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  
+  .status-chronic {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,54 @@
+/* Athletesystems-inspired theme (navy background, action blue, gold accents) */
+
+:root{
+  --aims-navy-900:#0b1f3b;
+  --aims-navy-800:#122a4f;
+  --aims-blue:#0b76ef;
+  --aims-blue-dark:#1164da;
+  --aims-gold:#ffc72c;
+  --aims-text:#22324a;
+}
+
+/* Page background */
+body{
+  background:linear-gradient(160deg,var(--aims-navy-900) 0%,var(--aims-navy-800) 100%);
+}
+
+/* Navbar */
+.navbar{
+  background:linear-gradient(135deg,var(--aims-navy-900) 0%,var(--aims-navy-800) 70%);
+}
+.navbar-brand,.navbar .nav-link{color:#fff !important}
+
+/* Cards and widgets */
+.card{border:none;border-radius:.75rem;box-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -1px rgba(0,0,0,.06)}
+.card-header{background:linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%);border-bottom:1px solid #e2e8f0}
+
+/* Primary buttons */
+.btn-primary{background:linear-gradient(135deg,var(--aims-blue) 0%,var(--aims-blue-dark) 100%);border:none;box-shadow:0 4px 14px 0 rgba(17,100,218,.39)}
+.btn-primary:hover{filter:brightness(1.03)}
+
+/* Outline primary */
+.btn-outline-primary{border:2px solid var(--aims-blue);color:var(--aims-blue)}
+.btn-outline-primary:hover{background:var(--aims-blue);color:#fff}
+
+/* Form focus */
+.form-control:focus{border-color:var(--aims-blue);box-shadow:0 0 0 3px rgba(11,118,239,.15)}
+
+/* Badges/alerts align with palette */
+.badge.bg-primary{background-color:var(--aims-blue)!important}
+.badge.bg-warning{background-color:var(--aims-gold)!important;color:#1b1b1b}
+.alert-warning{background:linear-gradient(135deg,#fff3cd 0%,var(--aims-gold) 60%);color:#1b1b1b;border:none}
+
+/* Utility tints */
+.text-primary{color:var(--aims-blue)!important}
+.bg-primary{background-color:var(--aims-blue)!important}
+.border-primary{border-color:var(--aims-blue)!important}
+
+/* Icon bubbles used across dashboards */
+.widget-icon{width:3rem;height:3rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.widget-icon.primary{background:linear-gradient(135deg,var(--aims-blue) 0%,var(--aims-blue-dark) 100%);color:#fff}
+.widget-icon.warning{background:linear-gradient(135deg,var(--aims-gold) 0%,#e0a800 100%);color:#1b1b1b}
+
+/* login page extras removed by request */
+

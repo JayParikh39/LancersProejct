@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ injury.player.get_full_name }} - {{ injury.injury_type.name }} - Lancer Injury Tracking{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <div class="avatar-lg bg-primary text-white rounded-circle me-3 d-flex align-items-center justify-content-center">
+                {{ injury.player.first_name|first|upper }}{{ injury.player.last_name|first|upper }}
+              </div>
+              <div>
+                <h1 class="card-title mb-1">{{ injury.player.get_full_name }}</h1>
+                <p class="text-muted mb-0">{{ injury.injury_type.name }} - {{ injury.body_part.name }}</p>
+                <small class="text-muted">{{ injury.player.team.name }} • {{ injury.injury_date|date:"F d, Y" }}</small>
+              </div>
+            </div>
+            <div class="d-flex align-items-center">
+              <span class="badge me-2" style="background-color: {{ injury.severity.color_code }}; color: white; font-size: 1rem; padding: 0.5rem 1rem;">
+                {{ injury.severity.name }}
+              </span>
+              <span class="status-badge status-{{ injury.status|lower }}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                {{ injury.get_status_display }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Main Details -->
+    <div class="col-lg-8">
+      <!-- Basic Information -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-info-circle me-2"></i>Injury Details
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="text-muted">Injury Information</h6>
+              <p><strong>Type:</strong> {{ injury.injury_type.name }}</p>
+              <p><strong>Body Part:</strong> {{ injury.body_part.name }}</p>
+              <p><strong>Severity:</strong> 
+                <span class="badge" style="background-color: {{ injury.severity.color_code }}; color: white;">
+                  {{ injury.severity.name }}
+                </span>
+              </p>
+              <p><strong>Status:</strong> 
+                <span class="status-badge status-{{ injury.status|lower }}">
+                  {{ injury.get_status_display }}
+                </span>
+              </p>
+            </div>
+            <div class="col-md-6">
+              <h6 class="text-muted">Dates & Timeline</h6>
+              <p><strong>Injury Date:</strong> {{ injury.injury_date|date:"F d, Y" }}</p>
+              <p><strong>Reported Date:</strong> {{ injury.reported_date|date:"F d, Y" }}</p>
+              <p><strong>Days Since Injury:</strong> {{ injury.days_since_injury }} days</p>
+              {% if injury.return_to_play_date %}
+                <p><strong>Return to Play:</strong> {{ injury.return_to_play_date|date:"F d, Y" }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description & Symptoms -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-file-text me-2"></i>Description & Symptoms
+          </h5>
+        </div>
+        <div class="card-body">
+          <h6 class="text-muted">Description</h6>
+          <p>{{ injury.description|linebreaks }}</p>
+          
+          {% if injury.symptoms %}
+          <h6 class="text-muted mt-3">Symptoms</h6>
+          <p>{{ injury.symptoms|linebreaks }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Treatment Information -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-heart-pulse me-2"></i>Treatment Information
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="text-muted">Treatment Details</h6>
+              <p><strong>Treatment Type:</strong> {{ injury.get_treatment_display }}</p>
+              {% if injury.requires_surgery %}
+                <p><strong>Surgery Required:</strong> 
+                  <span class="badge bg-danger">Yes</span>
+                  {% if injury.surgery_date %}
+                    <br><strong>Surgery Date:</strong> {{ injury.surgery_date|date:"F d, Y" }}
+                  {% endif %}
+                </p>
+              {% endif %}
+              {% if injury.medical_clearance %}
+                <p><strong>Medical Clearance:</strong> 
+                  <span class="badge bg-success">Cleared</span>
+                  {% if injury.clearance_date %}
+                    <br><strong>Clearance Date:</strong> {{ injury.clearance_date|date:"F d, Y" }}
+                  {% endif %}
+                </p>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <h6 class="text-muted">Recovery Timeline</h6>
+              {% if injury.estimated_recovery_time %}
+                <p><strong>Estimated Recovery:</strong> {{ injury.estimated_recovery_time }} days</p>
+              {% endif %}
+              {% if injury.actual_recovery_time %}
+                <p><strong>Actual Recovery:</strong> {{ injury.actual_recovery_time }} days</p>
+              {% endif %}
+              {% if injury.follow_up_required %}
+                <p><strong>Follow-up Required:</strong> 
+                  <span class="badge bg-warning">Yes</span>
+                  {% if injury.follow_up_date %}
+                    <br><strong>Follow-up Date:</strong> {{ injury.follow_up_date|date:"F d, Y" }}
+                  {% endif %}
+                </p>
+              {% endif %}
+            </div>
+          </div>
+          
+          {% if injury.treatment_notes %}
+          <h6 class="text-muted mt-3">Treatment Notes</h6>
+          <p>{{ injury.treatment_notes|linebreaks }}</p>
+          {% endif %}
+          
+          {% if injury.follow_up_notes %}
+          <h6 class="text-muted mt-3">Follow-up Notes</h6>
+          <p>{{ injury.follow_up_notes|linebreaks }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Follow-ups -->
+      {% if injury.follow_ups.all %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-clock-history me-2"></i>Follow-up Records
+          </h5>
+        </div>
+        <div class="card-body">
+          {% for follow_up in injury.follow_ups.all %}
+          <div class="border-start border-3 border-primary ps-3 mb-3">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h6 class="mb-1">{{ follow_up.follow_up_date|date:"F d, Y" }}</h6>
+                <p class="mb-1">{{ follow_up.notes|linebreaks }}</p>
+                <small class="text-muted">
+                  Status: <span class="status-badge status-{{ follow_up.status_update|lower }}">
+                    {{ follow_up.get_status_update_display }}
+                  </span>
+                </small>
+              </div>
+              <small class="text-muted">{{ follow_up.created_at|date:"M d, Y" }}</small>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Player Information -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-person me-2"></i>Player Information
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="text-center mb-3">
+            <div class="avatar-lg bg-primary text-white rounded-circle mx-auto d-flex align-items-center justify-content-center mb-2">
+              {{ injury.player.first_name|first|upper }}{{ injury.player.last_name|first|upper }}
+            </div>
+            <h5>{{ injury.player.get_full_name }}</h5>
+            <p class="text-muted">{{ injury.player.team.name }}</p>
+          </div>
+          
+          {% if injury.player.playerprofile %}
+            {% if injury.player.playerprofile.position %}
+              <p><strong>Position:</strong> {{ injury.player.playerprofile.position }}</p>
+            {% endif %}
+            {% if injury.player.playerprofile.number %}
+              <p><strong>Jersey Number:</strong> #{{ injury.player.playerprofile.number }}</p>
+            {% endif %}
+            {% if injury.player.playerprofile.dob %}
+              <p><strong>Date of Birth:</strong> {{ injury.player.playerprofile.dob|date:"F d, Y" }}</p>
+            {% endif %}
+          {% endif %}
+          
+          <hr>
+          <h6 class="text-muted">Contact Information</h6>
+          <p><strong>Email:</strong> {{ injury.player.email }}</p>
+        </div>
+      </div>
+
+      <!-- Reported By -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-person-badge me-2"></i>Reported By
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="avatar-sm bg-secondary text-white rounded-circle me-3 d-flex align-items-center justify-content-center">
+              {{ injury.reported_by.first_name|first|upper }}{{ injury.reported_by.last_name|first|upper }}
+            </div>
+            <div>
+              <h6 class="mb-1">{{ injury.reported_by.get_full_name }}</h6>
+              <small class="text-muted">{{ injury.reported_by.get_role_display }}</small>
+            </div>
+          </div>
+          <hr>
+          <small class="text-muted">
+            <i class="bi bi-clock me-1"></i>
+            Reported on {{ injury.reported_date|date:"F d, Y \a\t g:i A" }}
+          </small>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-lightning-fill me-2"></i>Quick Actions
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            {% if user.role == 'DOCTOR' or user.role == 'ADMIN' %}
+            <a href="{% url 'tracking:injury_update' injury.pk %}" class="btn btn-warning">
+              <i class="bi bi-pencil me-2"></i>Update Injury
+            </a>
+            {% endif %}
+            <a href="{% url 'tracking:injury_list' %}" class="btn btn-outline-primary">
+              <i class="bi bi-arrow-left me-2"></i>Back to List
+            </a>
+            {% if user.role == 'ADMIN' %}
+            <a href="/admin/injury_tracking/injuryrecord/{{ injury.pk }}/change/" class="btn btn-outline-secondary">
+              <i class="bi bi-gear me-2"></i>Admin Edit
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Confidentiality Notice -->
+      {% if injury.is_confidential %}
+      <div class="card border-warning">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-shield-exclamation text-warning me-2" style="font-size: 1.5rem;"></i>
+            <div>
+              <h6 class="text-warning mb-1">Confidential Record</h6>
+              <small class="text-muted">This injury record contains confidential medical information.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .status-active {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  .status-recovering {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  
+  .status-recovered {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  
+  .status-chronic {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  
+  .avatar-lg {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  
+  .avatar-sm {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}

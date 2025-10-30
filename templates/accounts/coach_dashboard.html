@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Coach Dashboard - Lancer Injury Tracking{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="widget-icon primary me-3">
+              <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+              <h1 class="card-title mb-1">Coach Dashboard</h1>
+              <p class="text-muted mb-0">{{ team.name }} - {{ team.get_gender_display }} Team</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Overview -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon primary me-3">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">{{ total_players }}</h3>
+            <p class="text-muted mb-0">Total Players</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon danger me-3">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">{{ active_count }}</h3>
+            <p class="text-muted mb-0">Active Injuries</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon success me-3">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">{{ recovered_count }}</h3>
+            <p class="text-muted mb-0">Recovered</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="widget">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon info me-3">
+            <i class="bi bi-percent"></i>
+          </div>
+          <div>
+            <h3 class="mb-1">
+              {% if total_players > 0 %}
+                {% widthratio active_count total_players 100 %}%
+              {% else %}
+                0%
+              {% endif %}
+            </h3>
+            <p class="text-muted mb-0">Injury Rate</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Player Status Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-clipboard-check me-2"></i>Player Status
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if player_status %}
+            <div class="row">
+              {% for player_data in player_status %}
+              <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card border-0 h-100" style="border-left: 4px solid {% if player_data.status_color == 'danger' %}#ef4444{% elif player_data.status_color == 'warning' %}#f59e0b{% elif player_data.status_color == 'info' %}#06b6d4{% else %}#10b981{% endif %} !important;">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <div class="avatar-sm bg-{{ player_data.status_color }} text-white rounded-circle me-3 d-flex align-items-center justify-content-center">
+                        {{ player_data.player.first_name|first|upper }}{{ player_data.player.last_name|first|upper }}
+                      </div>
+                      <div>
+                        <h6 class="card-title mb-1">{{ player_data.player.get_full_name }}</h6>
+                        <small class="text-muted">
+                          {% if player_data.player.playerprofile.position %}
+                            {{ player_data.player.playerprofile.position }}
+                          {% endif %}
+                          {% if player_data.player.playerprofile.number %}
+                            #{{ player_data.player.playerprofile.number }}
+                          {% endif %}
+                        </small>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <span class="badge bg-{{ player_data.status_color }} text-white">
+                        {% if player_data.latest_injury %}
+                          {{ player_data.latest_injury.severity.name }} - {{ player_data.latest_injury.injury_type.name }}
+                        {% else %}
+                          Healthy
+                        {% endif %}
+                      </span>
+                    </div>
+                    
+                    {% if player_data.active_injuries %}
+                      <div class="mb-2">
+                        <small class="text-muted">Active Injuries:</small>
+                        <div>
+                          {% for injury in player_data.active_injuries %}
+                            <span class="badge bg-warning text-dark me-1 mb-1">
+                              {{ injury.injury_type.name }} ({{ injury.body_part.name }})
+                            </span>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                      <small class="text-muted">
+                        Total: {{ player_data.total_injuries }} injuries
+                      </small>
+                      <button class="btn btn-outline-primary btn-sm" onclick="viewPlayerDetails({{ player_data.player.id }})">
+                        <i class="bi bi-eye me-1"></i>Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+              <p class="text-muted mt-2">No players found for this team</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Health Overview -->
+  <div class="row mb-4">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-heart-pulse me-2"></i>Team Health Overview
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="text-success">
+                <i class="bi bi-check-circle me-2"></i>Healthy Players
+              </h6>
+              <div class="progress mb-3" style="height: 8px;">
+                <div class="progress-bar bg-success" role="progressbar" 
+                     style="width: {% if total_players > 0 %}{% widthratio total_players|add:active_count|add:recovered_count total_players 100 %}{% else %}0{% endif %}%">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6 class="text-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>Injured Players
+              </h6>
+              <div class="progress mb-3" style="height: 8px;">
+                <div class="progress-bar bg-warning" role="progressbar" 
+                     style="width: {% if total_players > 0 %}{% widthratio active_count total_players 100 %}{% else %}0{% endif %}%">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-3">
+            <div class="col-12">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Team Health Status:</strong>
+                {% if active_count == 0 %}
+                  <span class="text-success">All players are healthy and ready to play!</span>
+                {% elif active_count <= 2 %}
+                  <span class="text-warning">Most players are healthy. Monitor injured players closely.</span>
+                {% else %}
+                  <span class="text-danger">High injury rate detected. Consider training adjustments.</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-lightning-fill me-2"></i>Quick Actions
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a href="{% url 'tracking:injury_list' %}" class="btn btn-primary">
+              <i class="bi bi-clipboard-data me-2"></i>View All Injuries
+            </a>
+            <a href="{% url 'tracking:analytics' %}" class="btn btn-info">
+              <i class="bi bi-graph-up me-2"></i>Team Analytics
+            </a>
+            <a href="{% url 'tracking:injury_create' %}" class="btn btn-warning">
+              <i class="bi bi-plus-circle me-2"></i>Report Injury
+            </a>
+            <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-person me-2"></i>My Profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Team Injuries -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-clipboard-check me-2"></i>Recent Team Injuries
+          </h5>
+          <a href="{% url 'tracking:injury_list' %}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-eye me-1"></i>View All
+          </a>
+        </div>
+        <div class="card-body">
+          {% if recent_injuries %}
+            <div class="table-responsive">
+              <table class="table table-sm table-hover">
+                <thead>
+                  <tr>
+                    <th>Player</th>
+                    <th>Injury Type</th>
+                    <th>Body Part</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Reported By</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for injury in recent_injuries %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar-sm bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
+                          {{ injury.player.first_name|first|upper }}{{ injury.player.last_name|first|upper }}
+                        </div>
+                        <div>
+                          <div class="fw-bold">{{ injury.player.get_full_name }}</div>
+                          {% if injury.player.playerprofile.position %}
+                            <small class="text-muted">{{ injury.player.playerprofile.position }}</small>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ injury.injury_type.name }}</td>
+                    <td>{{ injury.body_part.name }}</td>
+                    <td>
+                      <span class="badge" style="background-color: {{ injury.severity.color_code }}; color: white;">
+                        {{ injury.severity.name }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="status-badge status-{{ injury.status|lower }}">
+                        {{ injury.get_status_display }}
+                      </span>
+                    </td>
+                    <td>{{ injury.injury_date|date:"M d, Y" }}</td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar-sm bg-secondary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; font-size: 12px;">
+                          {{ injury.reported_by.first_name|first|upper }}{{ injury.reported_by.last_name|first|upper }}
+                        </div>
+                        <div>
+                          <div class="fw-bold small">{{ injury.reported_by.get_full_name }}</div>
+                          <small class="text-muted">{{ injury.reported_by.get_role_display }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <a href="{% url 'tracking:injury_detail' injury.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i>View
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-clipboard-check text-muted" style="font-size: 3rem;"></i>
+              <p class="text-muted mt-2">No recent injuries for your team</p>
+              <p class="text-muted small">All players are healthy and ready to play!</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Player Details Modal -->
+<div class="modal fade" id="playerDetailsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Player Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="playerDetailsContent">
+          <!-- Content will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function viewPlayerDetails(playerId) {
+    fetch(`/tracking/api/player/${playerId}/injuries/`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.injuries) {
+          let content = '<h6>Injury History</h6>';
+          if (data.injuries.length > 0) {
+            content += '<div class="table-responsive"><table class="table table-sm">';
+            content += '<thead><tr><th>Date</th><th>Type</th><th>Body Part</th><th>Severity</th><th>Status</th></tr></thead><tbody>';
+            
+            data.injuries.forEach(injury => {
+              content += `<tr>
+                <td>${injury.injury_date}</td>
+                <td>${injury.injury_type}</td>
+                <td>${injury.body_part}</td>
+                <td><span class="badge" style="background-color: ${injury.color_code};">${injury.severity}</span></td>
+                <td><span class="badge bg-${injury.status === 'ACTIVE' ? 'warning' : injury.status === 'RECOVERED' ? 'success' : 'info'}">${injury.status}</span></td>
+              </tr>`;
+            });
+            
+            content += '</tbody></table></div>';
+          } else {
+            content += '<p class="text-muted">No injury history found.</p>';
+          }
+          
+          document.getElementById('playerDetailsContent').innerHTML = content;
+          new bootstrap.Modal(document.getElementById('playerDetailsModal')).show();
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error loading player details');
+      });
+  }
+</script>
+
+<style>
+  .timeline {
+    position: relative;
+  }
+  
+  .timeline-item {
+    position: relative;
+  }
+  
+  .timeline-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  .avatar-sm {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .status-active {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  .status-recovering {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  
+  .status-recovered {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  
+  .status-chronic {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+</style>
+{% endblock %}

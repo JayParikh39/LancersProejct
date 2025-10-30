@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Report New Injury - Lancer Injury Tracking{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="widget-icon primary me-3">
+              <i class="bi bi-plus-circle"></i>
+            </div>
+            <div>
+              <h1 class="card-title mb-1">Report New Injury</h1>
+              <p class="text-muted mb-0">Document a new injury for a player</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-clipboard-plus me-2"></i>Injury Report Form
+          </h5>
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="bi bi-info-circle me-2"></i>Basic Information
+                </h6>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.player.id_for_label }}" class="form-label">Player <span class="text-danger">*</span></label>
+                {{ form.player }}
+                {% if form.player.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.player.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.injury_date.id_for_label }}" class="form-label">Injury Date <span class="text-danger">*</span></label>
+                {{ form.injury_date }}
+                {% if form.injury_date.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.injury_date.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Injury Details -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="bi bi-heart-pulse me-2"></i>Injury Details
+                </h6>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="{{ form.injury_type.id_for_label }}" class="form-label">Injury Type <span class="text-danger">*</span></label>
+                {{ form.injury_type }}
+                {% if form.injury_type.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.injury_type.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="{{ form.body_part.id_for_label }}" class="form-label">Body Part <span class="text-danger">*</span></label>
+                {{ form.body_part }}
+                {% if form.body_part.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.body_part.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="{{ form.severity.id_for_label }}" class="form-label">Severity <span class="text-danger">*</span></label>
+                {{ form.severity }}
+                {% if form.severity.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.severity.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="bi bi-file-text me-2"></i>Description & Symptoms
+                </h6>
+              </div>
+              <div class="col-12 mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">Description <span class="text-danger">*</span></label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.description.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+                <div class="form-text">Provide a detailed description of the injury.</div>
+              </div>
+              <div class="col-12 mb-3">
+                <label for="{{ form.symptoms.id_for_label }}" class="form-label">Symptoms</label>
+                {{ form.symptoms }}
+                {% if form.symptoms.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.symptoms.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+                <div class="form-text">Describe any symptoms the player is experiencing.</div>
+              </div>
+            </div>
+
+            <!-- Treatment Information -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="bi bi-heart-pulse me-2"></i>Treatment Information
+                </h6>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.treatment.id_for_label }}" class="form-label">Treatment Type <span class="text-danger">*</span></label>
+                {{ form.treatment }}
+                {% if form.treatment.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.treatment.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.estimated_recovery_time.id_for_label }}" class="form-label">Estimated Recovery Time (days)</label>
+                {{ form.estimated_recovery_time }}
+                {% if form.estimated_recovery_time.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.estimated_recovery_time.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-12 mb-3">
+                <label for="{{ form.treatment_notes.id_for_label }}" class="form-label">Treatment Notes</label>
+                {{ form.treatment_notes }}
+                {% if form.treatment_notes.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.treatment_notes.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+                <div class="form-text">Additional notes about the treatment plan.</div>
+              </div>
+            </div>
+
+            <!-- Medical Information -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="bi bi-shield-check me-2"></i>Medical Information
+                </h6>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-check">
+                  {{ form.requires_surgery }}
+                  <label class="form-check-label" for="{{ form.requires_surgery.id_for_label }}">
+                    Surgery Required
+                  </label>
+                </div>
+                {% if form.requires_surgery.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.requires_surgery.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-md-6 mb-3" id="surgery-date-field" style="display: none;">
+                <label for="{{ form.surgery_date.id_for_label }}" class="form-label">Surgery Date</label>
+                {{ form.surgery_date }}
+                {% if form.surgery_date.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.surgery_date.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Follow-up Information -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="bi bi-clock me-2"></i>Follow-up Information
+                </h6>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-check">
+                  {{ form.follow_up_required }}
+                  <label class="form-check-label" for="{{ form.follow_up_required.id_for_label }}">
+                    Follow-up Required
+                  </label>
+                </div>
+                {% if form.follow_up_required.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.follow_up_required.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-md-6 mb-3" id="follow-up-date-field" style="display: none;">
+                <label for="{{ form.follow_up_date.id_for_label }}" class="form-label">Follow-up Date</label>
+                {{ form.follow_up_date }}
+                {% if form.follow_up_date.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.follow_up_date.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-12 mb-3" id="follow-up-notes-field" style="display: none;">
+                <label for="{{ form.follow_up_notes.id_for_label }}" class="form-label">Follow-up Notes</label>
+                {{ form.follow_up_notes }}
+                {% if form.follow_up_notes.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.follow_up_notes.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Confidentiality -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="bi bi-shield-exclamation me-2"></i>Confidentiality
+                </h6>
+              </div>
+              <div class="col-12 mb-3">
+                <div class="form-check">
+                  {{ form.is_confidential }}
+                  <label class="form-check-label" for="{{ form.is_confidential.id_for_label }}">
+                    Mark as Confidential
+                  </label>
+                </div>
+                {% if form.is_confidential.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.is_confidential.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+                <div class="form-text">Confidential records have restricted access and are only visible to authorized medical personnel.</div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="row">
+              <div class="col-12">
+                <div class="d-flex justify-content-between">
+                  <a href="{% url 'tracking:injury_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Cancel
+                  </a>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-2"></i>Submit Injury Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-info-circle me-2"></i>Guidelines
+          </h5>
+        </div>
+        <div class="card-body">
+          <h6 class="text-primary">Required Fields</h6>
+          <ul class="list-unstyled small">
+            <li><i class="bi bi-check-circle text-success me-2"></i>Player selection</li>
+            <li><i class="bi bi-check-circle text-success me-2"></i>Injury date</li>
+            <li><i class="bi bi-check-circle text-success me-2"></i>Injury type</li>
+            <li><i class="bi bi-check-circle text-success me-2"></i>Body part affected</li>
+            <li><i class="bi bi-check-circle text-success me-2"></i>Severity level</li>
+            <li><i class="bi bi-check-circle text-success me-2"></i>Description</li>
+            <li><i class="bi bi-check-circle text-success me-2"></i>Treatment type</li>
+          </ul>
+          
+          <hr>
+          
+          <h6 class="text-primary">Best Practices</h6>
+          <ul class="list-unstyled small">
+            <li><i class="bi bi-lightbulb text-warning me-2"></i>Be specific in descriptions</li>
+            <li><i class="bi bi-lightbulb text-warning me-2"></i>Include all relevant symptoms</li>
+            <li><i class="bi bi-lightbulb text-warning me-2"></i>Set realistic recovery estimates</li>
+            <li><i class="bi bi-lightbulb text-warning me-2"></i>Schedule follow-ups when needed</li>
+            <li><i class="bi bi-lightbulb text-warning me-2"></i>Mark sensitive cases as confidential</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Show/hide surgery date field
+  document.getElementById('{{ form.requires_surgery.id_for_label }}').addEventListener('change', function() {
+    const surgeryDateField = document.getElementById('surgery-date-field');
+    if (this.checked) {
+      surgeryDateField.style.display = 'block';
+    } else {
+      surgeryDateField.style.display = 'none';
+    }
+  });
+
+  // Show/hide follow-up fields
+  document.getElementById('{{ form.follow_up_required.id_for_label }}').addEventListener('change', function() {
+    const followUpDateField = document.getElementById('follow-up-date-field');
+    const followUpNotesField = document.getElementById('follow-up-notes-field');
+    if (this.checked) {
+      followUpDateField.style.display = 'block';
+      followUpNotesField.style.display = 'block';
+    } else {
+      followUpDateField.style.display = 'none';
+      followUpNotesField.style.display = 'none';
+    }
+  });
+
+  // Initialize form validation
+  (function() {
+    'use strict';
+    window.addEventListener('load', function() {
+      var forms = document.getElementsByClassName('needs-validation');
+      var validation = Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+          if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    }, false);
+  })();
+</script>
+{% endblock %}

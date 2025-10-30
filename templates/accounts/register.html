@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Register - Lancer Injury Tracking{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(160deg, #0b1f3b 0%, #122a4f 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .main-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .widget-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .widget-icon.primary {
+            background: linear-gradient(135deg, #0b76ef 0%, #1164da 100%);
+            color: white;
+        }
+        
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0b76ef 0%, #1164da 100%);
+            box-shadow: 0 4px 14px 0 rgba(17, 100, 218, 0.39);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.49);
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid #0b76ef;
+            color: #0b76ef;
+        }
+        
+        .btn-outline-primary:hover {
+            background: #0b76ef;
+            color: white;
+        }
+        
+        .form-control {
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #0b76ef;
+            box-shadow: 0 0 0 3px rgba(11, 118, 239, 0.15);
+        }
+        
+        .alert {
+            border-radius: 0.75rem;
+            border: none;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+        
+        /* Background doodles */
+        .doodle {
+            position: fixed;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        .doodle-1 {
+            top: 10%;
+            left: 10%;
+            font-size: 3rem;
+            color: #3b82f6;
+        }
+        
+        .doodle-2 {
+            top: 20%;
+            right: 15%;
+            font-size: 2.5rem;
+            color: #ef4444;
+        }
+        
+        .doodle-3 {
+            bottom: 20%;
+            left: 15%;
+            font-size: 2rem;
+            color: #10b981;
+        }
+        
+        .doodle-4 {
+            bottom: 10%;
+            right: 10%;
+            font-size: 2.5rem;
+            color: #f59e0b;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #0b1f3b 0%, #122a4f 70%);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 1rem 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            color: white !important;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Background doodles -->
+        <div class="doodle doodle-1">🏥</div>
+        <div class="doodle doodle-2">🏒</div>
+        <div class="doodle doodle-3">📊</div>
+        <div class="doodle doodle-4">⚕️</div>
+        
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg fixed-top">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'login' %}">
+                    <i class="bi bi-shield-check me-2"></i>Lancer Injury Dashboard
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="bi bi-person-plus me-1"></i>Register
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'about' %}">
+                                <i class="bi bi-info-circle me-1"></i>About
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container-fluid" style="margin-top: 120px;">
+            <div class="row justify-content-center">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <div class="widget-icon primary mx-auto mb-3">
+                                    <i class="bi bi-person-plus"></i>
+                                </div>
+                                <h2 class="card-title">Create Account</h2>
+                                <p class="text-muted">Join the Lancer Injury Tracking system</p>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Note:</strong> Your role will be automatically assigned based on your email address.
+                            </div>
+
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                                    {{ form.username }}
+                                    {% if form.username.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.first_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.last_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                                    {{ form.password1 }}
+                                    {% if form.password1.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.password1.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                                    {{ form.password2 }}
+                                    {% if form.password2.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.password2.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-person-plus me-2"></i>Create Account
+                                    </button>
+                                </div>
+                            </form>
+
+                            <hr>
+                            
+                            <div class="text-center">
+                                <p class="text-muted">Already have an account?</p>
+                                <a href="{% url 'login' %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Lancer Athlete Injury Tracking Dashboard{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{% static 'css/athletesystems.css' %}">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <style>
+      :root {
+        /* Windsor Lancers brand-inspired palette */
+        --primary-color: #0b76ef; /* action blue like Sign In button */
+        --secondary-color: #22324a; /* muted navy for text accents */
+        --success-color: #10b981;
+        --warning-color: #ffc72c; /* Lancers gold */
+        --danger-color: #ef4444;
+        --info-color: #4aa8ff;
+        --light-bg: #f7f9fc;
+        --navy-900: #0b1f3b; /* deep navy background */
+        --navy-800: #122a4f; /* slightly lighter navy */
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --border-radius: 0.75rem;
+      }
+      
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(160deg, var(--navy-900) 0%, var(--navy-800) 100%);
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+      }
+      .brand-logo { height: 24px; width: auto; margin-right: .5rem; vertical-align: -4px; }
+      
+      .main-container {
+        background: var(--light-bg);
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+      }
+      
+      .navbar {
+        background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 70%);
+        box-shadow: var(--card-shadow);
+        padding: 1rem 0;
+      }
+      
+      .navbar-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: white !important;
+        text-decoration: none;
+      }
+      
+      .navbar-nav .nav-link {
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-weight: 500;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+      }
+      
+      .navbar-nav .nav-link:hover {
+        color: white !important;
+        transform: translateY(-1px);
+      }
+      
+      .card {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+      }
+      
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+      
+      .card-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+        font-weight: 600;
+        color: #1e293b;
+      }
+      
+      .btn {
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+      }
+      
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+      
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #1164da 100%);
+        box-shadow: 0 4px 14px 0 rgba(17, 100, 218, 0.39);
+      }
+      
+      .btn-success {
+        background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+      }
+      
+      .btn-warning {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #e0a800 100%);
+        color: #1b1b1b;
+      }
+      
+      .btn-danger {
+        background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%);
+      }
+      
+      .form-control {
+        border-radius: 0.5rem;
+        border: 1px solid #d1d5db;
+        transition: all 0.3s ease;
+      }
+      
+      .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+      
+      .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+      
+      .status-active {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+      
+      .status-recovering {
+        background-color: #dbeafe;
+        color: #1e40af;
+      }
+      
+      .status-recovered {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      
+      .status-chronic {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+      
+      .alert {
+        border-radius: var(--border-radius);
+        border: none;
+      }
+      
+      .alert-success {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+      }
+      
+      .alert-danger {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+      }
+      
+      .alert-warning {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+      }
+      
+      .alert-info {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+      }
+      
+      .table {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+      }
+      
+      .table thead th {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border: none;
+        font-weight: 600;
+        color: #1e293b;
+      }
+      
+      .table tbody tr {
+        transition: all 0.3s ease;
+      }
+      
+      .table tbody tr:hover {
+        background-color: #f8fafc;
+      }
+      
+      .widget {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+      }
+      
+      .widget:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+      
+      .widget-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+      
+      .widget-icon.primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
+        color: white;
+      }
+      
+      .widget-icon.success {
+        background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+        color: white;
+      }
+      
+      .widget-icon.warning {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+        color: white;
+      }
+      
+      .widget-icon.danger {
+        background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%);
+        color: white;
+      }
+      
+      .doodle {
+        position: absolute;
+        opacity: 0.1;
+        pointer-events: none;
+        z-index: 0;
+      }
+      
+      .doodle-1 {
+        top: 10%;
+        right: 10%;
+        font-size: 8rem;
+        transform: rotate(15deg);
+      }
+      
+      .doodle-2 {
+        bottom: 20%;
+        left: 5%;
+        font-size: 6rem;
+        transform: rotate(-10deg);
+      }
+      
+      .doodle-3 {
+        top: 50%;
+        right: 5%;
+        font-size: 4rem;
+        transform: rotate(45deg);
+      }
+      
+      @media (max-width: 768px) {
+        .navbar-brand {
+          font-size: 1.25rem;
+        }
+        
+        .card {
+          margin-bottom: 1rem;
+        }
+        
+        .widget {
+          padding: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <!-- Navigation -->
+      <nav class="navbar navbar-expand-lg">
+        <div class="container">
+          <a class="navbar-brand" href="{% url 'login' %}">
+            <img src="{% static 'img/dbyr-Windsor.png' %}" alt="Windsor" class="brand-logo">Lancer Injury Dashboard
+          </a>
+          
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+              {% if user.is_authenticated %}
+                <li class="nav-item">
+                  {% if user.role == 'ADMIN' %}
+                    <a class="nav-link" href="{% url 'tracking:admin_dashboard' %}">
+                      <i class="bi bi-house-door me-1"></i>Dashboard
+                    </a>
+                  {% elif user.role == 'COACH' %}
+                    <a class="nav-link" href="{% url 'tracking:coach_dashboard' %}">
+                      <i class="bi bi-house-door me-1"></i>Dashboard
+                    </a>
+                  {% elif user.role == 'DOCTOR' %}
+                    <a class="nav-link" href="{% url 'tracking:doctor_dashboard' %}">
+                      <i class="bi bi-house-door me-1"></i>Dashboard
+                    </a>
+                  {% elif user.role == 'PLAYER' %}
+                    <a class="nav-link" href="{% url 'tracking:player_dashboard' %}">
+                      <i class="bi bi-house-door me-1"></i>Dashboard
+                    </a>
+                  {% else %}
+                    <a class="nav-link" href="{% url 'dashboard' %}">
+                      <i class="bi bi-house-door me-1"></i>Dashboard
+                    </a>
+                  {% endif %}
+                </li>
+                {% if user.role == 'ADMIN' %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'tracking:admin_dashboard' %}">
+                      <i class="bi bi-gear me-1"></i>Admin
+                    </a>
+                  </li>
+                {% elif user.role == 'COACH' %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'tracking:coach_dashboard' %}">
+                      <i class="bi bi-people me-1"></i>Team
+                    </a>
+                  </li>
+                {% elif user.role == 'DOCTOR' %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'tracking:doctor_dashboard' %}">
+                      <i class="bi bi-heart-pulse me-1"></i>Medical
+                    </a>
+                  </li>
+                {% elif user.role == 'PLAYER' %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'tracking:player_dashboard' %}">
+                      <i class="bi bi-person me-1"></i>My Profile
+                    </a>
+                  </li>
+                {% endif %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'tracking:injury_list' %}">
+                    <i class="bi bi-clipboard-data me-1"></i>Injuries
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'profile' %}">
+                    <i class="bi bi-person-circle me-1"></i>Profile
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                  </a>
+                </li>
+              {% else %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'login' %}">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'register' %}">
+                    <i class="bi bi-person-plus me-1"></i>Register
+                  </a>
+                </li>
+              {% endif %}
+              <li class="nav-item">
+                <a class="nav-link" href="/about/">
+                  <i class="bi bi-info-circle me-1"></i>About
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="container-fluid py-4">
+        <!-- Messages -->
+        {% if messages %}
+          <div class="row">
+            <div class="col-12">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                  <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Playful Doodles -->
+        <div class="doodle doodle-1">🏒</div>
+        <div class="doodle doodle-2">⚕️</div>
+        <div class="doodle doodle-3">📊</div>
+
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Initialize date pickers
+      function initDatePickers() {
+        const els = document.querySelectorAll('.date-field');
+        els.forEach(el => {
+          flatpickr(el, {
+            dateFormat: 'Y-m-d',
+            allowInput: true,
+            maxDate: 'today'
+          });
+        });
+      }
+
+      // Initialize tooltips
+      function initTooltips() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+      }
+
+      // Initialize popovers
+      function initPopovers() {
+        const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.map(function (popoverTriggerEl) {
+          return new bootstrap.Popover(popoverTriggerEl);
+        });
+      }
+
+      // Auto-hide alerts after 5 seconds
+      function autoHideAlerts() {
+        const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+        alerts.forEach(alert => {
+          setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }, 5000);
+        });
+      }
+
+      // Initialize everything when DOM is loaded
+      document.addEventListener('DOMContentLoaded', function() {
+        initDatePickers();
+        initTooltips();
+        initPopovers();
+        autoHideAlerts();
+      });
+
+      // AJAX helper for status updates
+      function updateInjuryStatus(injuryId, newStatus) {
+        fetch(`/tracking/api/injury/${injuryId}/status/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: `status=${newStatus}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Error updating status');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error updating status');
+        });
+      }
+    </script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
