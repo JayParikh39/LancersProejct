@@ -291,7 +291,7 @@
   <body>
     <div class="main-container">
       <!-- Navigation -->
-      <nav class="navbar navbar-expand-lg">
+      <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
           <a class="navbar-brand" href="{% url 'login' %}">
             <img src="{% static 'img/dbyr-Windsor.png' %}" alt="Windsor" class="brand-logo">Lancer Injury Dashboard
@@ -432,6 +432,8 @@
           });
         });
       }
+      .navbar .navbar-toggler { border-color: rgba(255,255,255,.25); }
+      .navbar .navbar-toggler:focus { box-shadow: 0 0 0 .1rem rgba(255,255,255,.25); }
 
       // Initialize tooltips
       function initTooltips() {

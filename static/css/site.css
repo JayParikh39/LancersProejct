@@ -11,3 +11,13 @@ body{font-family:Inter,Arial,Helvetica,sans-serif;background:linear-gradient(180
 .status-red{background:#dc3545}
 .button{background:#0b76ef;color:white;border:none;padding:10px 14px;border-radius:8px}
 small.muted{color:#6b7b8c}
+
+/* Responsive tweaks */
+@media (max-width: 992px){
+  .grid{grid-template-columns:1fr}
+}
+@media (max-width: 576px){
+  img,video{max-width:100%;height:auto}
+  .container{padding-left:12px;padding-right:12px}
+  .table{display:block;overflow-x:auto;white-space:nowrap}
+}

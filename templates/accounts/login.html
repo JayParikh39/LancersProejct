@@ -19,6 +19,11 @@
             align-items: center;
             justify-content: center;
         }
+        @media (max-width: 576px) {
+            body { background-attachment: scroll; }
+            .container-fluid { margin-top: 90px !important; padding-left: 1rem; padding-right: 1rem; }
+            .card { max-width: 100%; }
+        }
         
         .main-container {
             width: 100%;
