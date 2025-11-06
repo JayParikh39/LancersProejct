@@ -35,4 +35,8 @@ urlpatterns = [
              template_name='accounts/password_reset_complete.html'
          ),
          name='password_reset_complete'),
+    # Team access requests
+    path('request-team-access/', views.request_team_access, name='request_team_access'),
+    path('admin/team-requests/', views.admin_review_requests, name='admin_review_requests'),
+    path('admin/team-requests/<int:req_id>/<str:decision>/', views.admin_decide_request, name='admin_decide_request'),
 ]

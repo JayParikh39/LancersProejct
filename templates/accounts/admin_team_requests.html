@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Team Access Requests{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-inboxes me-2"></i>Pending Team Access Requests</h2>
+  </div>
+  <div class="card">
+    <div class="card-body p-0">
+      {% if pending %}
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Team</th>
+                <th>Role</th>
+                <th>Justification</th>
+                <th>Submitted</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in pending %}
+                <tr>
+                  <td>{{ r.user.get_full_name|default:r.user.username }}</td>
+                  <td>{{ r.team.name }}</td>
+                  <td>{{ r.get_role_scope_display }}</td>
+                  <td style="max-width: 360px; white-space: normal;">{{ r.justification|default:'—' }}</td>
+                  <td>{{ r.created_at }}</td>
+                  <td>
+                    <a href="{% url 'admin_decide_request' r.id 'approve' %}" class="btn btn-sm btn-success me-1"><i class="bi bi-check"></i></a>
+                    <a href="{% url 'admin_decide_request' r.id 'deny' %}" class="btn btn-sm btn-danger"><i class="bi bi-x"></i></a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-3 text-muted">No pending requests.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

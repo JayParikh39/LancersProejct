@@ -293,7 +293,7 @@
       <!-- Navigation -->
       <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-          <a class="navbar-brand" href="{% url 'login' %}">
+          <a class="navbar-brand" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}">
             <img src="{% static 'img/dbyr-Windsor.png' %}" alt="Windsor" class="brand-logo">Lancer Injury Dashboard
           </a>
           
@@ -339,10 +339,25 @@
                       <i class="bi bi-people me-1"></i>Team
                     </a>
                   </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'request_team_access' %}">
+                      <i class="bi bi-person-check me-1"></i>Request Access
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'tracking:events_calendar' %}">
+                      <i class="bi bi-calendar-event me-1"></i>Events
+                    </a>
+                  </li>
                 {% elif user.role == 'DOCTOR' %}
                   <li class="nav-item">
                     <a class="nav-link" href="{% url 'tracking:doctor_dashboard' %}">
                       <i class="bi bi-heart-pulse me-1"></i>Medical
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'request_team_access' %}">
+                      <i class="bi bi-person-check me-1"></i>Request Access
                     </a>
                   </li>
                 {% elif user.role == 'PLAYER' %}

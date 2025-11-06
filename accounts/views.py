@@ -1,9 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import BasicRegistrationForm, PlayerProfileForm, CoachProfileForm, DoctorProfileForm, TeamSelectionForm, UserProfileForm
-from .models import PlayerProfile, CoachProfile, DoctorProfile
+from django.utils import timezone
+from .forms import BasicRegistrationForm, PlayerProfileForm, CoachProfileForm, DoctorProfileForm, TeamSelectionForm, UserProfileForm, TeamPermissionRequestForm
+from .models import PlayerProfile, CoachProfile, DoctorProfile, TeamPermissionRequest, TeamPermission
 
 def register_view(request):
     if request.method == 'POST':
@@ -173,3 +174,55 @@ def profile_view(request):
     }
     
     return render(request, 'accounts/user_profile.html', context)
+
+@login_required
+def request_team_access(request):
+    if request.user.role not in ['COACH', 'DOCTOR', 'ADMIN']:
+        messages.error(request, 'Only coaches and doctors can request additional team access.')
+        return redirect('dashboard')
+    if request.method == 'POST':
+        form = TeamPermissionRequestForm(request.POST)
+        if form.is_valid():
+            req = form.save(commit=False)
+            req.user = request.user
+            req.status = 'PENDING'
+            req.save()
+            messages.success(request, 'Your request has been submitted for admin approval.')
+            return redirect('request_team_access')
+    else:
+        form = TeamPermissionRequestForm()
+    my_requests = TeamPermissionRequest.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'accounts/request_team_access.html', {'form': form, 'my_requests': my_requests})
+
+@login_required
+def admin_review_requests(request):
+    if request.user.role != 'ADMIN':
+        messages.error(request, 'Admin access required.')
+        return redirect('dashboard')
+    pending = TeamPermissionRequest.objects.filter(status='PENDING')
+    return render(request, 'accounts/admin_team_requests.html', {'pending': pending})
+
+@login_required
+def admin_decide_request(request, req_id, decision):
+    if request.user.role != 'ADMIN':
+        messages.error(request, 'Admin access required.')
+        return redirect('dashboard')
+    req = get_object_or_404(TeamPermissionRequest, id=req_id)
+    if req.status != 'PENDING':
+        messages.info(request, 'This request has already been processed.')
+        return redirect('admin_review_requests')
+    if decision not in ['approve', 'deny']:
+        messages.error(request, 'Invalid decision.')
+        return redirect('admin_review_requests')
+    if decision == 'approve':
+        # Create TeamPermission
+        TeamPermission.objects.get_or_create(user=req.user, team=req.team, role_scope=req.role_scope)
+        req.status = 'APPROVED'
+        messages.success(request, 'Request approved and access granted.')
+    else:
+        req.status = 'DENIED'
+        messages.info(request, 'Request denied.')
+    req.reviewed_by = request.user
+    req.reviewed_at = timezone.now()
+    req.save()
+    return redirect('admin_review_requests')

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from .models import (
     InjuryRecord, InjuryType, BodyPart, InjurySeverity, 
-    InjuryFollowUp, TeamRoster
+    InjuryFollowUp, TeamRoster, Event
 )
 
 User = get_user_model()
@@ -42,15 +42,45 @@ class InjuryReportForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        # Filter players based on user's team if they're a coach
-        if user and user.is_coach() and user.team:
-            self.fields['player'].queryset = User.objects.filter(
-                role='PLAYER', team=user.team
-            )
-        elif user and user.role == 'ADMIN':
-            self.fields['player'].queryset = User.objects.filter(role='PLAYER')
+        # Optional team filter when user has multiple authorized teams
+        authorized_teams = None
+        if user and hasattr(user, 'get_authorized_teams'):
+            authorized_teams = user.get_authorized_teams()
+        
+        # Dynamically add team selector if more than one team
+        if authorized_teams is not None and authorized_teams.count() > 1:
+            self.fields.insert(0, 'team', forms.ModelChoiceField(
+                queryset=authorized_teams,
+                required=True,
+                empty_label=None,
+                widget=forms.Select(attrs={'class': 'form-control'})
+            ))
+            # If POSTed, use selected team; else default to user's primary team
+            selected_team = None
+            data = args[0] if args else None
+            if data and 'team' in data:
+                try:
+                    selected_team = authorized_teams.get(id=data.get('team'))
+                except Exception:
+                    selected_team = None
+            if selected_team is None and user and user.team in authorized_teams:
+                selected_team = user.team
+            if selected_team:
+                self.fields['player'].queryset = User.objects.filter(role='PLAYER', team=selected_team)
+            else:
+                self.fields['player'].queryset = User.objects.filter(role='PLAYER', team__in=authorized_teams)
         else:
-            self.fields['player'].queryset = User.objects.filter(role='PLAYER')
+            # Single-team users: filter to that team if present
+            if user and user.is_coach() and user.team:
+                self.fields['player'].queryset = User.objects.filter(
+                    role='PLAYER', team=user.team
+                )
+            elif user and user.role == 'ADMIN':
+                self.fields['player'].queryset = User.objects.filter(role='PLAYER')
+            elif user and getattr(user, 'is_doctor', lambda: False)() and authorized_teams is not None:
+                self.fields['player'].queryset = User.objects.filter(role='PLAYER', team__in=authorized_teams)
+            else:
+                self.fields['player'].queryset = User.objects.filter(role='PLAYER')
 
 class InjuryUpdateForm(forms.ModelForm):
     """Form for updating injury status"""
@@ -153,3 +183,46 @@ class InjurySearchForm(forms.Form):
         required=False,
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
     )
+
+class EventForm(forms.ModelForm):
+    """Form for coaches/admins to create team events"""
+    class Meta:
+        model = Event
+        fields = ['event_type', 'title', 'description', 'location', 'start_datetime', 'end_datetime']
+        widgets = {
+            'event_type': forms.Select(attrs={'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'location': forms.TextInput(attrs={'class': 'form-control'}),
+            'start_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'end_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.request_user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        # Optional team selector when user has multiple authorized teams
+        authorized_teams = None
+        if self.request_user and hasattr(self.request_user, 'get_authorized_teams'):
+            authorized_teams = self.request_user.get_authorized_teams()
+        if authorized_teams is not None and authorized_teams.count() > 1:
+            self.fields.insert(0, 'team', forms.ModelChoiceField(
+                queryset=authorized_teams,
+                required=True,
+                empty_label=None,
+                widget=forms.Select(attrs={'class': 'form-control'})
+            ))
+
+    def save(self, commit=True):
+        event = super().save(commit=False)
+        if self.request_user:
+            event.created_by = self.request_user
+            # Respect selected team if present; otherwise use primary
+            selected_team = self.cleaned_data.get('team') if 'team' in self.cleaned_data else None
+            if selected_team is not None:
+                event.team = selected_team
+            elif hasattr(self.request_user, 'team') and self.request_user.team:
+                event.team = self.request_user.team
+        if commit:
+            event.save()
+        return event

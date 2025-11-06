@@ -13,11 +13,11 @@ import json
 
 from .models import (
     InjuryRecord, InjuryType, BodyPart, InjurySeverity, 
-    InjuryFollowUp, TeamRoster, InjuryAnalytics
+    InjuryFollowUp, TeamRoster, InjuryAnalytics, Event
 )
 from .forms import (
     InjuryReportForm, InjuryUpdateForm, InjuryFollowUpForm,
-    PlayerProfileForm, TeamRosterForm, InjurySearchForm
+    PlayerProfileForm, TeamRosterForm, InjurySearchForm, EventForm
 )
 from accounts.models import CustomUser, Team
 
@@ -37,6 +37,156 @@ class DoctorRequiredMixin(UserPassesTestMixin):
 class PlayerRequiredMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.role in ['ADMIN', 'PLAYER']
+
+# -------- Coach Events (Calendar) --------
+@login_required
+def events_calendar(request):
+    """Calendar view for coaches to manage team events"""
+    if request.user.role not in ['ADMIN', 'COACH']:
+        messages.error(request, "Access denied. Coach privileges required.")
+        return redirect('dashboard')
+    if request.user.role == 'COACH' and not request.user.team:
+        messages.error(request, "No team assigned. Please contact administrator.")
+        return redirect('dashboard')
+
+    # Upcoming events for quick view
+    qs = Event.objects.all()
+    if request.user.role == 'COACH':
+        qs = qs.filter(team=request.user.team)
+    upcoming_events = qs.order_by('start_datetime')[:10]
+
+    return render(request, 'injury_tracking/events_calendar.html', {
+        'upcoming_events': upcoming_events
+    })
+
+@login_required
+def events_feed(request):
+    """JSON feed for FullCalendar events for the coach's team"""
+    if request.user.role not in ['ADMIN', 'COACH']:
+        return JsonResponse({'error': 'Access denied'}, status=403)
+
+    team = None
+    if request.user.role == 'COACH':
+        team = request.user.team
+        if not team:
+            return JsonResponse({'events': []})
+    else:
+        # Admin can pass team id
+        team_id = request.GET.get('team')
+        if team_id:
+            team = get_object_or_404(Team, id=team_id)
+
+    qs = Event.objects.all()
+    if team:
+        qs = qs.filter(team=team)
+
+    # Optional range filtering by FullCalendar (start/end ISO strings)
+    start = request.GET.get('start')
+    end = request.GET.get('end')
+    try:
+        if start:
+            start_dt = datetime.fromisoformat(start)
+            qs = qs.filter(end_datetime__gte=start_dt)
+        if end:
+            end_dt = datetime.fromisoformat(end)
+            qs = qs.filter(start_datetime__lte=end_dt)
+    except Exception:
+        pass
+
+    events = []
+    type_to_color = {
+        'TRAINING': '#3b82f6',
+        'SESSION': '#10b981',
+        'GAME': '#f59e0b',
+    }
+    for ev in qs.order_by('start_datetime'):
+        events.append({
+            'id': ev.id,
+            'title': ev.title,
+            'start': ev.start_datetime.isoformat(),
+            'end': ev.end_datetime.isoformat(),
+            'url': str(reverse_lazy('tracking:event_detail', kwargs={'pk': ev.id})),
+            'backgroundColor': type_to_color.get(ev.event_type, '#1f2937'),
+            'borderColor': '#ffffff',
+            'extendedProps': {
+                'type': ev.get_event_type_display(),
+                'location': ev.location or '',
+            }
+        })
+    # Return a plain array as FullCalendar expects
+    return JsonResponse(events, safe=False)
+
+@login_required
+def event_create(request):
+    """Create a new event (coach/admin)"""
+    if request.user.role not in ['ADMIN', 'COACH']:
+        messages.error(request, "Access denied. Coach privileges required.")
+        return redirect('dashboard')
+    if request.method == 'POST':
+        form = EventForm(request.POST, user=request.user)
+        if form.is_valid():
+            # Permission guard: selected team must be authorized
+            selected_team = form.cleaned_data.get('team') if 'team' in form.cleaned_data else getattr(request.user, 'team', None)
+            if request.user.role == 'COACH':
+                auth_teams = request.user.get_authorized_teams() if hasattr(request.user, 'get_authorized_teams') else None
+                if auth_teams is not None and selected_team and selected_team not in list(auth_teams):
+                    messages.error(request, 'You do not have permission to create events for the selected team.')
+                    return render(request, 'injury_tracking/event_form.html', {'form': form})
+            event = form.save()
+            messages.success(request, 'Event created successfully.')
+            return redirect('tracking:event_detail', pk=event.id)
+    else:
+        # Pre-fill from query params (start/end/title) if provided by calendar selection
+        initial = {}
+        start_q = request.GET.get('start')
+        end_q = request.GET.get('end')
+        title_q = request.GET.get('title')
+        if start_q:
+            try:
+                initial['start_datetime'] = datetime.fromisoformat(start_q)
+            except Exception:
+                pass
+        if end_q:
+            try:
+                initial['end_datetime'] = datetime.fromisoformat(end_q)
+            except Exception:
+                pass
+        if title_q:
+            initial['title'] = title_q
+        form = EventForm(user=request.user, initial=initial)
+    return render(request, 'injury_tracking/event_form.html', {'form': form})
+
+@login_required
+def event_detail(request, pk):
+    """Detail page for an event showing players expected to miss"""
+    event = get_object_or_404(Event, pk=pk)
+
+    # Permissions: coach of same team or admin
+    if request.user.role == 'COACH':
+        if not request.user.team or request.user.team != event.team:
+            messages.error(request, "Access denied.")
+            return redirect('dashboard')
+
+    # Determine players likely to miss: active/recovering/chronic whose injury overlaps the event period
+    overlapping_injuries = InjuryRecord.objects.filter(
+        player__team=event.team,
+        status__in=['ACTIVE', 'RECOVERING', 'CHRONIC'],
+        injury_date__lte=event.end_datetime.date()
+    ).select_related('player', 'injury_type', 'severity')
+
+    # If return_to_play_date exists and is before event start, they should be available
+    missing_players = []
+    for inj in overlapping_injuries:
+        rtp = inj.return_to_play_date
+        if rtp and rtp < event.start_datetime.date():
+            continue
+        missing_players.append(inj)
+
+    context = {
+        'event': event,
+        'missing_injuries': missing_players,
+    }
+    return render(request, 'injury_tracking/event_detail.html', context)
 
 # Dashboard Views
 @login_required

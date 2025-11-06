@@ -5,6 +5,31 @@ from django.utils import timezone
 
 User = get_user_model()
 
+class Event(models.Model):
+    """Team events such as trainings, sessions, and games"""
+    EVENT_TYPE_CHOICES = [
+        ('TRAINING', 'Training'),
+        ('SESSION', 'Session'),
+        ('GAME', 'Game'),
+    ]
+
+    team = models.ForeignKey('accounts.Team', on_delete=models.CASCADE, related_name='events')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    location = models.CharField(max_length=200, blank=True)
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['start_datetime']
+
+    def __str__(self):
+        return f"{self.get_event_type_display()} - {self.title} ({self.start_datetime:%Y-%m-%d %H:%M})"
+
 class InjuryType(models.Model):
     """Types of injuries that can occur"""
     name = models.CharField(max_length=100, unique=True)

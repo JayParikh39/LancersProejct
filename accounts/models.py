@@ -80,6 +80,20 @@ class CustomUser(AbstractUser):
         address_parts = [self.address, self.city, self.state, self.zip_code]
         return ', '.join([part for part in address_parts if part.strip()])
 
+    def get_authorized_teams(self):
+        """Return a queryset of teams the user is allowed to act for.
+        Includes the primary `team` plus any teams granted via TeamPermission.
+        """
+        from django.db.models import Q
+        base_qs = Team.objects.all()
+        teams = base_qs.none()
+        if self.team:
+            teams = base_qs.filter(id=self.team.id)
+        extra = TeamPermission.objects.filter(user=self).values_list('team_id', flat=True)
+        if extra:
+            teams = Team.objects.filter(Q(id__in=list(extra)) | Q(id=getattr(self.team, 'id', None)))
+        return teams.distinct()
+
 class PlayerProfile(models.Model):
     # Personal Information
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -182,6 +196,47 @@ class DoctorProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.username} Doctor Profile"
+
+class TeamPermission(models.Model):
+    """Grants a user (coach/doctor/admin) permissions for an additional team."""
+    ROLE_SCOPE_CHOICES = [
+        ('COACH', 'Coach'),
+        ('DOCTOR', 'Doctor'),
+        ('ADMIN', 'Admin'),
+    ]
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='team_permissions')
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='user_permissions')
+    role_scope = models.CharField(max_length=10, choices=ROLE_SCOPE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'team', 'role_scope')
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.team.name} ({self.get_role_scope_display()})"
+
+class TeamPermissionRequest(models.Model):
+    """A request by a user to gain access to an additional team."""
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('DENIED', 'Denied'),
+    ]
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='team_permission_requests')
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    role_scope = models.CharField(max_length=10, choices=TeamPermission.ROLE_SCOPE_CHOICES)
+    justification = models.TextField(blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_by = models.ForeignKey(CustomUser, null=True, blank=True, on_delete=models.SET_NULL, related_name='team_permission_reviews')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    admin_note = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Req:{self.user.username}->{self.team.name} ({self.role_scope}) [{self.status}]"
 
 class EmailRoleMapping(models.Model):
     """Model to map email domains or specific emails to roles"""

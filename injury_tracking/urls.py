@@ -23,4 +23,10 @@ urlpatterns = [
     # API endpoints
     path('api/player/<int:player_id>/injuries/', views.get_player_injuries, name='player_injuries_api'),
     path('api/injury/<int:injury_id>/status/', views.update_injury_status, name='update_injury_status'),
+
+    # Events (Coach Calendar)
+    path('events/', views.events_calendar, name='events_calendar'),
+    path('events/create/', views.event_create, name='event_create'),
+    path('events/<int:pk>/', views.event_detail, name='event_detail'),
+    path('events/feed/', views.events_feed, name='events_feed'),
 ]

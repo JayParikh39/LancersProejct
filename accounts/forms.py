@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, PlayerProfile, CoachProfile, DoctorProfile, Team, EmailRoleMapping
+from .models import CustomUser, PlayerProfile, CoachProfile, DoctorProfile, Team, EmailRoleMapping, TeamPermissionRequest
 
 class BasicRegistrationForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True)
@@ -58,15 +58,13 @@ class BasicRegistrationForm(UserCreationForm):
                 if email.lower() == mapping.email_pattern.lower():
                     return mapping.role, mapping.team
         
-        # Default role assignment based on email domain
-        if email.endswith('@lancer.com'):
+        # Default role assignment based on email domain (UWin Windsor mapping)
+        if email.endswith('@athlete.uwindsor.ca'):
             return 'PLAYER', None
-        elif email.endswith('@lancer.coach.com') or email.endswith('@coach.com'):
+        elif email.endswith('@coach.uwindsor.ca'):
             return 'COACH', None
-        elif email.endswith('@lancer.medical.com') or email.endswith('@medical.com'):
+        elif email.endswith('@doctor.uwindsor.ca'):
             return 'DOCTOR', None
-        elif email.endswith('@lancer.admin.com') or email.endswith('@admin.com'):
-            return 'ADMIN', None
         else:
             # Default to player for unknown domains
             return 'PLAYER', None
@@ -244,6 +242,16 @@ class UserProfileForm(forms.ModelForm):
             if len(phone) < 10:
                 raise forms.ValidationError("Please enter a valid phone number.")
         return phone
+
+class TeamPermissionRequestForm(forms.ModelForm):
+    class Meta:
+        model = TeamPermissionRequest
+        fields = ['team', 'role_scope', 'justification']
+        widgets = {
+            'team': forms.Select(attrs={'class': 'form-control'}),
+            'role_scope': forms.Select(attrs={'class': 'form-control'}),
+            'justification': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Brief justification for access'})
+        }
     
     def clean_emergency_contact_phone(self):
         phone = self.cleaned_data.get('emergency_contact_phone')
