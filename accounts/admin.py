@@ -1,4 +1,73 @@
 from django.contrib import admin
+from django.utils import timezone
+from .models import TeamPermission, TeamPermissionRequest
+
+
+@admin.register(TeamPermission)
+class TeamPermissionAdmin(admin.ModelAdmin):
+    list_display = ['user', 'team', 'role_scope', 'created_at']
+    list_filter = ['role_scope', 'team', 'created_at']
+    search_fields = ['user__username', 'user__first_name', 'user__last_name', 'team__name']
+    ordering = ['-created_at']
+
+
+@admin.register(TeamPermissionRequest)
+class TeamPermissionRequestAdmin(admin.ModelAdmin):
+    list_display = ['user', 'team', 'role_scope', 'status', 'created_at', 'reviewed_by', 'reviewed_at']
+    list_filter = ['status', 'role_scope', 'team', 'created_at']
+    search_fields = ['user__username', 'user__first_name', 'user__last_name', 'team__name']
+    ordering = ['-created_at']
+    actions = ['approve_requests', 'deny_requests']
+
+    def save_model(self, request, obj, form, change):
+        # Detect status transition to APPROVED and grant permission
+        old_status = None
+        if change:
+            try:
+                old = TeamPermissionRequest.objects.get(pk=obj.pk)
+                old_status = old.status
+            except TeamPermissionRequest.DoesNotExist:
+                old_status = None
+
+        # Stamp reviewer/time if status changed from pending
+        if obj.status in ['APPROVED', 'DENIED'] and (not change or old_status != obj.status):
+            obj.reviewed_by = request.user
+            obj.reviewed_at = timezone.now()
+
+        super().save_model(request, obj, form, change)
+
+        if obj.status == 'APPROVED' and old_status != 'APPROVED':
+            TeamPermission.objects.get_or_create(
+                user=obj.user,
+                team=obj.team,
+                role_scope=obj.role_scope,
+            )
+
+    def approve_requests(self, request, queryset):
+        for req in queryset.filter(status='PENDING'):
+            req.status = 'APPROVED'
+            req.reviewed_by = request.user
+            req.reviewed_at = timezone.now()
+            req.save()
+            TeamPermission.objects.get_or_create(
+                user=req.user,
+                team=req.team,
+                role_scope=req.role_scope,
+            )
+        self.message_user(request, 'Selected requests approved and access granted.')
+    approve_requests.short_description = 'Approve selected requests'
+
+    def deny_requests(self, request, queryset):
+        updated = queryset.filter(status='PENDING').update(
+            status='DENIED'
+        )
+        for req in queryset.filter(status='DENIED'):
+            req.reviewed_by = request.user
+            req.reviewed_at = timezone.now()
+            req.save()
+        self.message_user(request, f'{updated} request(s) denied.')
+    deny_requests.short_description = 'Deny selected requests'
+from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser, Team, PlayerProfile, CoachProfile, DoctorProfile, EmailRoleMapping
 
