@@ -63,11 +63,9 @@
       select: function(info) {
         const start = info.startStr;
         const end = info.endStr;
-        const title = prompt('Event title (optional):');
         const url = new URL('{% url "tracking:event_create" %}', window.location.origin);
         url.searchParams.set('start', start);
         url.searchParams.set('end', end);
-        if (title) url.searchParams.set('title', title);
         window.location.href = url.toString();
       },
       headerToolbar: {

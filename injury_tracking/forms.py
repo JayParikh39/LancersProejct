@@ -49,12 +49,15 @@ class InjuryReportForm(forms.ModelForm):
         
         # Dynamically add team selector if more than one team
         if authorized_teams is not None and authorized_teams.count() > 1:
-            self.fields.insert(0, 'team', forms.ModelChoiceField(
+            self.fields['team'] = forms.ModelChoiceField(
                 queryset=authorized_teams,
                 required=True,
                 empty_label=None,
                 widget=forms.Select(attrs={'class': 'form-control'})
-            ))
+            )
+            # Ensure 'team' appears first using Django's order_fields
+            field_order = ['team'] + [name for name in self.fields if name != 'team']
+            self.order_fields(field_order)
             # If POSTed, use selected team; else default to user's primary team
             selected_team = None
             data = args[0] if args else None
@@ -206,12 +209,15 @@ class EventForm(forms.ModelForm):
         if self.request_user and hasattr(self.request_user, 'get_authorized_teams'):
             authorized_teams = self.request_user.get_authorized_teams()
         if authorized_teams is not None and authorized_teams.count() > 1:
-            self.fields.insert(0, 'team', forms.ModelChoiceField(
+            self.fields['team'] = forms.ModelChoiceField(
                 queryset=authorized_teams,
                 required=True,
                 empty_label=None,
                 widget=forms.Select(attrs={'class': 'form-control'})
-            ))
+            )
+            # Ensure 'team' appears first using Django's order_fields
+            field_order = ['team'] + [name for name in self.fields if name != 'team']
+            self.order_fields(field_order)
 
     def save(self, commit=True):
         event = super().save(commit=False)
