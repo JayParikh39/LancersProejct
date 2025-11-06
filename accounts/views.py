@@ -3,7 +3,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from .forms import BasicRegistrationForm, PlayerProfileForm, CoachProfileForm, DoctorProfileForm, TeamSelectionForm, UserProfileForm, TeamPermissionRequestForm
+from .forms import BasicRegistrationForm, PlayerProfileForm, CoachProfileForm, DoctorProfileForm, TeamSelectionForm, CoachTeamSelectionForm, UserProfileForm, TeamPermissionRequestForm
 from .models import PlayerProfile, CoachProfile, DoctorProfile, TeamPermissionRequest, TeamPermission
 
 def register_view(request):
@@ -47,20 +47,24 @@ def complete_registration_view(request):
                 
         elif user.role == 'COACH':
             profile_form = CoachProfileForm(request.POST)
-            team_form = TeamSelectionForm(request.POST)
             
-            if profile_form.is_valid() and team_form.is_valid():
+            if profile_form.is_valid():
                 # Create coach profile
                 profile = profile_form.save(commit=False)
                 profile.user = user
                 profile.save()
                 
-                # Assign team
-                user.team = team_form.cleaned_data['team']
+                # Coaches cannot select their own team - only admins can assign teams
+                # If user already has a team from EmailRoleMapping, keep it
+                # Otherwise, leave it blank for admin assignment (security measure)
+                
                 user.is_registration_complete = True
                 user.save()
                 
-                messages.success(request, 'Registration completed successfully!')
+                if not user.team:
+                    messages.success(request, 'Registration completed! An admin will assign your team shortly.')
+                else:
+                    messages.success(request, 'Registration completed successfully!')
                 return redirect('dashboard')
                 
         elif user.role == 'DOCTOR':
@@ -85,7 +89,8 @@ def complete_registration_view(request):
             team_form = TeamSelectionForm()
         elif user.role == 'COACH':
             profile_form = CoachProfileForm()
-            team_form = TeamSelectionForm()
+            # Coaches cannot select their own team - only admins can assign (security)
+            team_form = None
         elif user.role == 'DOCTOR':
             profile_form = DoctorProfileForm()
             team_form = None
@@ -125,9 +130,18 @@ def dashboard(request):
     """Redirect to appropriate dashboard based on user role"""
     user = request.user
     
+    # Check if registration is complete first
+    if not user.is_registration_complete:
+        return redirect('complete_registration')
+    
     if user.role == 'ADMIN':
         return redirect('tracking:admin_dashboard')
     elif user.role == 'COACH':
+        # If coach has no team, show a message instead of redirecting to coach_dashboard
+        if not user.team:
+            messages.info(request, 'Your registration is complete! An administrator will assign your team shortly.')
+            # Show a simple page or redirect to profile
+            return redirect('profile')
         return redirect('tracking:coach_dashboard')
     elif user.role == 'DOCTOR':
         return redirect('tracking:doctor_dashboard')
@@ -143,6 +157,12 @@ def profile_view(request):
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
+            # Security: Prevent coaches from changing their team assignment
+            # Team can only be changed by admins via admin panel
+            if user.role == 'COACH' and 'team' in request.POST:
+                messages.warning(request, 'Team assignment cannot be changed. Please contact an administrator.')
+                return redirect('profile')
+            
             form.save()
             messages.success(request, 'Your profile has been updated successfully!')
             return redirect('profile')

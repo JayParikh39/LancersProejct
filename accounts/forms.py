@@ -193,6 +193,15 @@ class TeamSelectionForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
+class CoachTeamSelectionForm(forms.Form):
+    """Team selection form for coaches - optional, as admins should assign teams"""
+    team = forms.ModelChoiceField(
+        queryset=Team.objects.all(),
+        required=False,
+        empty_label="Select your team (optional - admin will assign if left blank)",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
 class UserProfileForm(forms.ModelForm):
     """Comprehensive user profile form for editing personal information"""
     

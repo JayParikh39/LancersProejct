@@ -516,14 +516,16 @@
                     </div>
                   {% endif %}
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label for="{{ team_form.team.id_for_label }}" class="form-label">Team</label>
-                  {{ team_form.team }}
-                  {% if team_form.team.errors %}
-                    <div class="invalid-feedback d-block">
-                      {% for error in team_form.team.errors %}{{ error }}{% endfor %}
-                    </div>
-                  {% endif %}
+                <div class="col-12 mb-3">
+                  <div class="alert alert-info mb-0">
+                    <i class="bi bi-shield-lock me-2"></i>
+                    <strong>Team Assignment:</strong> For security purposes, team assignment is handled by administrators only. 
+                    {% if user.team %}
+                      Your team has been pre-assigned: <strong>{{ user.team }}</strong>
+                    {% else %}
+                      An administrator will assign your team after your registration is reviewed.
+                    {% endif %}
+                  </div>
                 </div>
               </div>
               
