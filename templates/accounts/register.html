@@ -10,13 +10,37 @@
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(rgba(9, 16, 31, 0.78), rgba(9, 16, 31, 0.78)), url('{% static "img/lkrb-UofWBackgroundMockup.jpg" %}') center center / cover no-repeat fixed;
             min-height: 100vh;
             margin: 0;
             padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+        }
+        
+        /* Background image with overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(9, 16, 31, 0.78), rgba(9, 16, 31, 0.78)), url('{% static "img/lkrb-UofWBackgroundMockup.jpg" %}') center center / cover no-repeat fixed;
+            z-index: -1;
+        }
+        
+        /* Background gradient fallback for when image doesn't load */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(160deg, #0b1f3b 0%, #122a4f 100%);
+            z-index: -2;
         }
         
         .main-container {
