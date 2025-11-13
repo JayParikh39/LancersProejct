@@ -273,6 +273,7 @@
         transform: rotate(45deg);
       }
       
+      /* Mobile optimizations */
       @media (max-width: 768px) {
         .navbar-brand {
           font-size: 1.25rem;
@@ -284,6 +285,99 @@
         
         .widget {
           padding: 1rem;
+        }
+        
+        /* Constrain container-fluid on mobile to prevent overstretching */
+        .container-fluid {
+          padding-left: 1rem;
+          padding-right: 1rem;
+          max-width: 100%;
+        }
+        
+        /* Reduce widget icon size on mobile */
+        .widget-icon {
+          width: 2.5rem;
+          height: 2.5rem;
+          font-size: 1.25rem;
+          margin-bottom: 0.75rem;
+        }
+        
+        /* Reduce card title size on mobile */
+        .card-title {
+          font-size: 1.5rem;
+        }
+        
+        /* Better spacing for dashboard headers */
+        .card-body .d-flex {
+          flex-wrap: wrap;
+        }
+        
+        .card-body .d-flex .widget-icon {
+          margin-bottom: 0;
+          margin-right: 0.75rem;
+        }
+      }
+      
+      /* Small mobile screens */
+      @media (max-width: 576px) {
+        .container-fluid {
+          padding-left: 0.75rem;
+          padding-right: 0.75rem;
+        }
+        
+        .widget {
+          padding: 0.875rem;
+        }
+        
+        .card-body {
+          padding: 1rem;
+        }
+        
+        .card-header {
+          padding: 0.75rem 1rem;
+        }
+        
+        .widget-icon {
+          width: 2.25rem;
+          height: 2.25rem;
+          font-size: 1.125rem;
+        }
+        
+        .card-title {
+          font-size: 1.35rem;
+        }
+        
+        /* Better text sizing for stats */
+        .widget h3 {
+          font-size: 1.5rem;
+        }
+        
+        .widget p {
+          font-size: 0.875rem;
+        }
+      }
+      
+      /* Very small screens */
+      @media (max-width: 375px) {
+        .container-fluid {
+          padding-left: 0.5rem;
+          padding-right: 0.5rem;
+        }
+        
+        .widget {
+          padding: 0.75rem;
+        }
+        
+        .card-body {
+          padding: 0.875rem;
+        }
+        
+        .card-title {
+          font-size: 1.25rem;
+        }
+        
+        .widget h3 {
+          font-size: 1.35rem;
         }
       }
     </style>
@@ -355,11 +449,6 @@
                     </a>
                   </li>
                 {% elif user.role == 'DOCTOR' %}
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'tracking:doctor_dashboard' %}">
-                      <i class="bi bi-heart-pulse me-1"></i>Medical
-                    </a>
-                  </li>
                   <li class="nav-item">
                     <a class="nav-link" href="{% url 'request_team_access' %}">
                       <i class="bi bi-person-check me-1"></i>Request Access

@@ -4,17 +4,16 @@
 {% block title %}My Dashboard - Lancer Injury Tracking{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
   <!-- Header -->
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card">
         <div class="card-body">
           <div class="d-flex align-items-center">
-            <div class="widget-icon primary me-3">
+            <div class="widget-icon primary me-3 flex-shrink-0">
               <i class="bi bi-person-fill"></i>
             </div>
-            <div>
+            <div class="flex-grow-1">
               <h1 class="card-title mb-1">My Dashboard</h1>
               <p class="text-muted mb-0">Welcome back, {{ user.get_full_name }}!</p>
             </div>
@@ -25,14 +24,14 @@
   </div>
 
   <!-- Personal Stats -->
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon primary me-3">
+          <div class="widget-icon primary me-3 flex-shrink-0">
             <i class="bi bi-clipboard-data"></i>
           </div>
-          <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">{{ total_injuries }}</h3>
             <p class="text-muted mb-0">Total Injuries</p>
           </div>
@@ -43,10 +42,10 @@
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon warning me-3">
+          <div class="widget-icon warning me-3 flex-shrink-0">
             <i class="bi bi-exclamation-triangle"></i>
           </div>
-          <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">{{ active_injuries|length }}</h3>
             <p class="text-muted mb-0">Active Injuries</p>
           </div>
@@ -57,10 +56,10 @@
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon success me-3">
+          <div class="widget-icon success me-3 flex-shrink-0">
             <i class="bi bi-check-circle"></i>
           </div>
-          <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">{{ avg_recovery_time|floatformat:0|default:"0" }}</h3>
             <p class="text-muted mb-0">Avg Recovery (days)</p>
           </div>
@@ -71,10 +70,10 @@
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon info me-3">
+          <div class="widget-icon info me-3 flex-shrink-0">
             <i class="bi bi-heart-pulse"></i>
           </div>
-          <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">
               {% if active_injuries %}
                 <span class="text-warning">Injured</span>
@@ -91,7 +90,7 @@
 
   <!-- Current Status -->
   {% if active_injuries %}
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card border-warning">
         <div class="card-header bg-warning text-dark">
@@ -148,7 +147,7 @@
     </div>
   </div>
   {% else %}
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card border-success">
         <div class="card-header bg-success text-white">
@@ -167,7 +166,7 @@
   {% endif %}
 
   <!-- Injury History -->
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -239,7 +238,7 @@
 
   <!-- Recovery Progress -->
   {% if active_injuries %}
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card">
         <div class="card-header">
@@ -311,7 +310,6 @@
       </div>
     </div>
   </div>
-</div>
 {% endblock %}
 
 {% block scripts %}

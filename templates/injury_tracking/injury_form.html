@@ -43,7 +43,19 @@
                   <i class="bi bi-info-circle me-2"></i>Basic Information
                 </h6>
               </div>
+              {% if form.team %}
               <div class="col-md-6 mb-3">
+                <label for="{{ form.team.id_for_label }}" class="form-label">Team <span class="text-danger">*</span></label>
+                {{ form.team }}
+                {% if form.team.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.team.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+                <div class="form-text">Select the team to filter players</div>
+              </div>
+              {% endif %}
+              <div class="{% if form.team %}col-md-6{% else %}col-md-6{% endif %} mb-3">
                 <label for="{{ form.player.id_for_label }}" class="form-label">Player <span class="text-danger">*</span></label>
                 {{ form.player }}
                 {% if form.player.errors %}
@@ -51,8 +63,13 @@
                     {% for error in form.player.errors %}{{ error }}{% endfor %}
                   </div>
                 {% endif %}
+                {% if not form.player.field.queryset.exists %}
+                <div class="alert alert-warning mt-2">
+                  <i class="bi bi-exclamation-triangle me-2"></i>No players found. Please ensure players are registered and assigned to teams.
+                </div>
+                {% endif %}
               </div>
-              <div class="col-md-6 mb-3">
+              <div class="{% if form.team %}col-md-6{% else %}col-md-6{% endif %} mb-3">
                 <label for="{{ form.injury_date.id_for_label }}" class="form-label">Injury Date <span class="text-danger">*</span></label>
                 {{ form.injury_date }}
                 {% if form.injury_date.errors %}

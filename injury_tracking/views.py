@@ -346,19 +346,23 @@ def doctor_dashboard(request):
         return redirect('dashboard')
     
     # Get recent injuries that need attention
+    # Exclude injuries that have been medically cleared (cleared injuries don't need attention)
     recent_injuries = InjuryRecord.objects.filter(
-        status__in=['ACTIVE', 'RECOVERING']
+        status__in=['ACTIVE', 'RECOVERING'],
+        medical_clearance=False  # Only show injuries that haven't been cleared
     ).select_related('player', 'injury_type', 'severity').order_by('-reported_date')[:10]
     
     # Get follow-ups due
+    # Exclude injuries that have been medically cleared
     today = timezone.now().date()
     follow_ups_due = InjuryRecord.objects.filter(
         follow_up_required=True,
         follow_up_date__lte=today,
-        status__in=['ACTIVE', 'RECOVERING']
+        status__in=['ACTIVE', 'RECOVERING'],
+        medical_clearance=False  # Only show injuries that haven't been cleared
     ).select_related('player', 'injury_type')
     
-    # Get pending clearances
+    # Get pending clearances (injuries marked as RECOVERED but not yet medically cleared)
     pending_clearances = InjuryRecord.objects.filter(
         status='RECOVERED',
         medical_clearance=False
@@ -506,11 +510,43 @@ class InjuryUpdateView(DoctorRequiredMixin, UpdateView):
     model = InjuryRecord
     form_class = InjuryUpdateForm
     template_name = 'injury_tracking/injury_update_form.html'
-    success_url = reverse_lazy('injury_list')
     
     def form_valid(self, form):
-        messages.success(self.request, 'Injury record updated successfully.')
-        return super().form_valid(form)
+        # Get medical clearance status from form
+        medical_clearance = form.cleaned_data.get('medical_clearance', False)
+        status = form.cleaned_data.get('status')
+        
+        # Modify the instance directly (form.instance is a reference to the actual model instance)
+        injury = form.instance
+        
+        # If medical clearance is checked, automatically set status to RECOVERED if not already
+        if medical_clearance and status != 'RECOVERED':
+            injury.status = 'RECOVERED'
+        
+        # Auto-calculate actual recovery time if status is RECOVERED or medical clearance is set
+        if injury.status == 'RECOVERED' or medical_clearance:
+            if not injury.actual_recovery_time:
+                recovery_days = (timezone.now().date() - injury.injury_date).days
+                if recovery_days > 0:
+                    injury.actual_recovery_time = recovery_days
+            
+            # Auto-set clearance date if medical clearance is checked but date not set
+            if medical_clearance and not injury.clearance_date:
+                injury.clearance_date = timezone.now().date()
+        
+        # Save the form (this will save the modified instance)
+        response = super().form_valid(form)
+        
+        # Prepare success messages
+        messages.success(self.request, f'Injury record for {injury.player.get_full_name()} has been updated successfully.')
+        if medical_clearance:
+            messages.info(self.request, 'Player has been medically cleared. Injury removed from active dashboard.')
+        
+        return response
+    
+    def get_success_url(self):
+        from django.urls import reverse
+        return reverse('tracking:injury_detail', kwargs={'pk': self.object.pk})
 
 # Analytics Views
 @login_required
@@ -644,7 +680,67 @@ def update_injury_status(request, injury_id):
         new_status = request.POST.get('status')
         if new_status in dict(InjuryRecord.STATUS_CHOICES):
             injury.status = new_status
+            
+            # When marking as recovered, automatically set medical clearance
+            if new_status == 'RECOVERED':
+                injury.medical_clearance = True
+                if not injury.clearance_date:
+                    injury.clearance_date = timezone.now().date()
+                
+                # Calculate actual recovery time if not set
+                if not injury.actual_recovery_time:
+                    recovery_days = (timezone.now().date() - injury.injury_date).days
+                    if recovery_days > 0:
+                        injury.actual_recovery_time = recovery_days
+            
             injury.save()
             return JsonResponse({'success': True, 'status': new_status})
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def mark_as_recovered(request, injury_id):
+    """Mark injury as recovered with medical clearance"""
+    if request.user.role not in ['ADMIN', 'DOCTOR']:
+        messages.error(request, "Access denied. Doctor privileges required.")
+        return redirect('tracking:injury_list')
+    
+    injury = get_object_or_404(InjuryRecord, id=injury_id)
+    
+    if request.method == 'POST':
+        injury.status = 'RECOVERED'
+        injury.medical_clearance = True
+        injury.clearance_date = timezone.now().date()
+        
+        # Calculate actual recovery time if not set
+        if not injury.actual_recovery_time:
+            recovery_days = (timezone.now().date() - injury.injury_date).days
+            if recovery_days > 0:
+                injury.actual_recovery_time = recovery_days
+        
+        injury.save()
+        messages.success(request, f'Injury for {injury.player.get_full_name()} has been marked as recovered with medical clearance.')
+        return redirect('tracking:injury_detail', pk=injury.id)
+    
+    return redirect('tracking:injury_detail', pk=injury.id)
+
+@login_required
+def delete_injury(request, injury_id):
+    """Delete an injury record (doctors and admins only)"""
+    if request.user.role not in ['ADMIN', 'DOCTOR']:
+        messages.error(request, "Access denied. Doctor privileges required.")
+        return redirect('tracking:injury_list')
+    
+    injury = get_object_or_404(InjuryRecord, id=injury_id)
+    player_name = injury.player.get_full_name()
+    
+    if request.method == 'POST':
+        injury.delete()
+        messages.success(request, f'Injury record for {player_name} has been deleted.')
+        return redirect('tracking:injury_list')
+    
+    # GET request - show confirmation page
+    context = {
+        'injury': injury,
+    }
+    return render(request, 'injury_tracking/injury_confirm_delete.html', context)

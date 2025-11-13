@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Injury - Lancer Injury Tracking{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-warning">
+            <strong>Warning!</strong> You are about to delete an injury record. This action cannot be undone.
+          </div>
+          
+          <div class="mb-4">
+            <h6 class="text-muted">Injury Details:</h6>
+            <div class="card bg-light">
+              <div class="card-body">
+                <p><strong>Player:</strong> {{ injury.player.get_full_name }}</p>
+                <p><strong>Injury Type:</strong> {{ injury.injury_type.name }}</p>
+                <p><strong>Body Part:</strong> {{ injury.body_part.name }}</p>
+                <p><strong>Status:</strong> 
+                  <span class="status-badge status-{{ injury.status|lower }}">
+                    {{ injury.get_status_display }}
+                  </span>
+                </p>
+                <p><strong>Injury Date:</strong> {{ injury.injury_date|date:"F d, Y" }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <form method="post">
+            {% csrf_token %}
+            <div class="d-flex gap-2 justify-content-end">
+              <a href="{% url 'tracking:injury_detail' injury.pk %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Cancel
+              </a>
+              <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash me-2"></i>Delete Injury Record
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .status-active {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  .status-recovering {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  
+  .status-recovered {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  
+  .status-chronic {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+</style>
+{% endblock %}
+

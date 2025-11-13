@@ -4,17 +4,16 @@
 {% block title %}Doctor Dashboard - Lancer Injury Tracking{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
   <!-- Header -->
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card">
         <div class="card-body">
           <div class="d-flex align-items-center">
-            <div class="widget-icon primary me-3">
+            <div class="widget-icon primary me-3 flex-shrink-0">
               <i class="bi bi-heart-pulse-fill"></i>
             </div>
-            <div>
+            <div class="flex-grow-1">
               <h1 class="card-title mb-1">Medical Dashboard</h1>
               <p class="text-muted mb-0">Injury management and medical oversight</p>
             </div>
@@ -25,14 +24,14 @@
   </div>
 
   <!-- Quick Stats -->
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon warning me-3">
+          <div class="widget-icon warning me-3 flex-shrink-0">
             <i class="bi bi-clock-fill"></i>
           </div>
-    <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">{{ recent_injuries|length }}</h3>
             <p class="text-muted mb-0">Recent Injuries</p>
           </div>
@@ -43,10 +42,10 @@
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon danger me-3">
+          <div class="widget-icon danger me-3 flex-shrink-0">
             <i class="bi bi-exclamation-triangle-fill"></i>
           </div>
-          <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">{{ follow_ups_due|length }}</h3>
             <p class="text-muted mb-0">Follow-ups Due</p>
           </div>
@@ -57,10 +56,10 @@
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon info me-3">
+          <div class="widget-icon info me-3 flex-shrink-0">
             <i class="bi bi-clipboard-check-fill"></i>
           </div>
-          <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">{{ pending_clearances|length }}</h3>
             <p class="text-muted mb-0">Pending Clearances</p>
           </div>
@@ -70,11 +69,11 @@
     
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
-        <div class="d-flex align-items-center">
-          <div class="widget-icon success me-3">
+        <div class="d-flex align-items-center flex-column flex-md-row">
+          <div class="widget-icon success me-0 me-md-3 mb-2 mb-md-0 flex-shrink-0">
             <i class="bi bi-plus-circle-fill"></i>
           </div>
-          <div>
+          <div class="w-100">
             <a href="{% url 'tracking:injury_create' %}" class="btn btn-success w-100">
               <i class="bi bi-plus me-2"></i>Report Injury
             </a>
@@ -86,7 +85,7 @@
 
   <!-- Follow-ups Due -->
   {% if follow_ups_due %}
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card border-warning">
         <div class="card-header bg-warning text-dark">
@@ -150,7 +149,7 @@
 
   <!-- Pending Clearances -->
   {% if pending_clearances %}
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card border-info">
         <div class="card-header bg-info text-white">
@@ -218,7 +217,7 @@
   {% endif %}
 
   <!-- Recent Injuries -->
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -333,7 +332,6 @@
       </div>
     </div>
   </div>
-</div>
 {% endblock %}
 
 {% block scripts %}

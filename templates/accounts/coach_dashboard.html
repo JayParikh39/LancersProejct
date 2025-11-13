@@ -4,17 +4,16 @@
 {% block title %}Coach Dashboard - Lancer Injury Tracking{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
   <!-- Header -->
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card">
         <div class="card-body">
           <div class="d-flex align-items-center">
-            <div class="widget-icon primary me-3">
+            <div class="widget-icon primary me-3 flex-shrink-0">
               <i class="bi bi-people-fill"></i>
             </div>
-            <div>
+            <div class="flex-grow-1">
               <h1 class="card-title mb-1">Coach Dashboard</h1>
               <p class="text-muted mb-0">{{ team.name }} - {{ team.get_gender_display }} Team</p>
             </div>
@@ -25,14 +24,14 @@
   </div>
 
   <!-- Team Overview -->
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon primary me-3">
+          <div class="widget-icon primary me-3 flex-shrink-0">
             <i class="bi bi-people-fill"></i>
           </div>
-          <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">{{ total_players }}</h3>
             <p class="text-muted mb-0">Total Players</p>
           </div>
@@ -43,10 +42,10 @@
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon danger me-3">
+          <div class="widget-icon danger me-3 flex-shrink-0">
             <i class="bi bi-exclamation-triangle-fill"></i>
           </div>
-          <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">{{ active_count }}</h3>
             <p class="text-muted mb-0">Active Injuries</p>
           </div>
@@ -57,10 +56,10 @@
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon success me-3">
+          <div class="widget-icon success me-3 flex-shrink-0">
             <i class="bi bi-check-circle-fill"></i>
           </div>
-          <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">{{ recovered_count }}</h3>
             <p class="text-muted mb-0">Recovered</p>
           </div>
@@ -71,10 +70,10 @@
     <div class="col-lg-3 col-md-6 mb-3">
       <div class="widget">
         <div class="d-flex align-items-center">
-          <div class="widget-icon info me-3">
+          <div class="widget-icon info me-3 flex-shrink-0">
             <i class="bi bi-percent"></i>
           </div>
-          <div>
+          <div class="flex-grow-1">
             <h3 class="mb-1">
               {% if total_players > 0 %}
                 {% widthratio active_count total_players 100 %}%
@@ -90,7 +89,7 @@
   </div>
 
   <!-- Player Status Section -->
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-12">
       <div class="card">
         <div class="card-header">
@@ -170,7 +169,7 @@
   </div>
 
   <!-- Team Health Overview -->
-  <div class="row mb-4">
+  <div class="row mb-3 mb-md-4">
     <div class="col-lg-8">
       <div class="card">
         <div class="card-header">
