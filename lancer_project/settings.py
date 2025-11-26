@@ -7,7 +7,7 @@ SECRET_KEY = 'dev-secret-key-change-me'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver','lancersproejct.onrender.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver','lancersproejct.onrender.com','lancersproject.pythonanyhere.com']
 
 # Redirects for authentication
 LOGIN_URL = '/login/'
