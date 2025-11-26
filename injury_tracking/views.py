@@ -551,7 +551,10 @@ class InjuryUpdateView(DoctorRequiredMixin, UpdateView):
 # Analytics Views
 @login_required
 def analytics_dashboard(request):
-    """Analytics dashboard for injury data visualization"""
+    """Analytics dashboard for injury data visualization
+    IMPORTANT: This view includes ALL injuries regardless of status (ACTIVE, RECOVERING, RECOVERED, CHRONIC)
+    to ensure comprehensive tracking and analysis for end-of-year reports.
+    """
     # Check if user has completed registration
     if not request.user.is_registration_complete:
         return redirect('complete_registration')
@@ -560,8 +563,16 @@ def analytics_dashboard(request):
         messages.error(request, "Access denied. Admin or Coach privileges required.")
         return redirect('dashboard')
     
-    # Get current year
-    current_year = timezone.now().year
+    # Get date range filters (for academic year analysis)
+    # Default to current year, but allow filtering by academic year
+    selected_year = request.GET.get('year', str(timezone.now().year))
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    
+    try:
+        selected_year = int(selected_year)
+    except (ValueError, TypeError):
+        selected_year = timezone.now().year
     
     # Get team filter
     team_filter = None
@@ -570,68 +581,204 @@ def analytics_dashboard(request):
     elif request.GET.get('team'):
         team_filter = get_object_or_404(Team, id=request.GET.get('team'))
     
-    # Build base queryset
+    # Build base queryset - INCLUDES ALL INJURIES (ACTIVE, RECOVERING, RECOVERED, CHRONIC)
+    # This is critical for comprehensive tracking and end-of-year analysis
     if team_filter:
         injuries_queryset = InjuryRecord.objects.filter(player__team=team_filter)
     else:
         injuries_queryset = InjuryRecord.objects.all()
     
-    # Monthly injury trends
+    # Apply date range filtering if provided
+    if date_from:
+        try:
+            from datetime import datetime
+            date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+            injuries_queryset = injuries_queryset.filter(injury_date__gte=date_from_obj)
+        except (ValueError, TypeError):
+            pass
+    
+    if date_to:
+        try:
+            from datetime import datetime
+            date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+            injuries_queryset = injuries_queryset.filter(injury_date__lte=date_to_obj)
+        except (ValueError, TypeError):
+            pass
+    
+    # If no date range specified, filter by selected year
+    if not date_from and not date_to:
+        injuries_queryset = injuries_queryset.filter(injury_date__year=selected_year)
+    
+    # Status breakdown - show that ALL injuries including recovered are included
+    status_breakdown = injuries_queryset.values('status').annotate(
+        count=Count('id')
+    ).order_by('status')
+    
+    # Monthly injury trends (includes ALL statuses) with player details
     monthly_data = []
+    monthly_injuries_detail = []  # Store detailed injury info for each month
     for month in range(1, 13):
-        month_injuries = injuries_queryset.filter(
-            injury_date__year=current_year,
+        month_injuries_qs = injuries_queryset.filter(
+            injury_date__year=selected_year,
             injury_date__month=month
-        ).count()
+        ).select_related('player', 'injury_type', 'body_part', 'severity')
+        
+        month_injuries = month_injuries_qs.count()
+        
+        # Get detailed injury info for this month
+        month_details = []
+        for injury in month_injuries_qs:
+            month_details.append({
+                'player': injury.player.get_full_name() or injury.player.username,
+                'injury_type': injury.injury_type.name,
+                'body_part': injury.body_part.name,
+                'severity': injury.severity.name,
+                'status': injury.status,
+                'date': injury.injury_date.strftime('%Y-%m-%d'),
+            })
+        
         monthly_data.append({
             'month': month,
             'count': month_injuries
         })
+        monthly_injuries_detail.append({
+            'month': month,
+            'injuries': month_details
+        })
     
-    # Injury type distribution
+    # Injury type distribution (includes ALL injuries regardless of status)
     injury_type_data = injuries_queryset.values('injury_type__name').annotate(
         count=Count('id')
     ).order_by('-count')[:10]
     
-    # Body part distribution
+    # Get detailed injury type data with player info
+    injury_type_details = {}
+    for injury_type_name in [item['injury_type__name'] for item in injury_type_data]:
+        type_injuries = injuries_queryset.filter(
+            injury_type__name=injury_type_name
+        ).select_related('player', 'body_part', 'severity')
+        injury_type_details[injury_type_name] = [
+            {
+                'player': inj.player.get_full_name() or inj.player.username,
+                'body_part': inj.body_part.name,
+                'severity': inj.severity.name,
+                'status': inj.status,
+                'date': inj.injury_date.strftime('%Y-%m-%d'),
+            }
+            for inj in type_injuries
+        ]
+    
+    # Body part distribution (includes ALL injuries regardless of status)
     body_part_data = injuries_queryset.values('body_part__name').annotate(
         count=Count('id')
     ).order_by('-count')[:10]
     
-    # Severity distribution
+    # Get detailed body part data with player info
+    body_part_details = {}
+    for body_part_name in [item['body_part__name'] for item in body_part_data]:
+        part_injuries = injuries_queryset.filter(
+            body_part__name=body_part_name
+        ).select_related('player', 'injury_type', 'severity')
+        body_part_details[body_part_name] = [
+            {
+                'player': inj.player.get_full_name() or inj.player.username,
+                'injury_type': inj.injury_type.name,
+                'severity': inj.severity.name,
+                'status': inj.status,
+                'date': inj.injury_date.strftime('%Y-%m-%d'),
+            }
+            for inj in part_injuries
+        ]
+    
+    # Severity distribution (includes ALL injuries regardless of status)
     severity_data = injuries_queryset.values('severity__name', 'severity__color_code').annotate(
         count=Count('id')
     ).order_by('-count')
     
-    # Recovery time analysis
+    # Get all injuries with player details for detailed breakdown table
+    all_injuries_detail = injuries_queryset.select_related(
+        'player', 'injury_type', 'body_part', 'severity'
+    ).order_by('-injury_date')
+    
+    # Recovery time analysis (only for recovered injuries with actual recovery time)
     recovered_injuries = injuries_queryset.filter(
         status='RECOVERED',
         actual_recovery_time__isnull=False
     )
     avg_recovery_time = recovered_injuries.aggregate(avg_time=Avg('actual_recovery_time'))['avg_time']
     
-    # Team comparison (for admins)
+    # Total statistics (ALL injuries included)
+    total_injuries = injuries_queryset.count()
+    active_count = injuries_queryset.filter(status='ACTIVE').count()
+    recovering_count = injuries_queryset.filter(status='RECOVERING').count()
+    recovered_count = injuries_queryset.filter(status='RECOVERED').count()
+    chronic_count = injuries_queryset.filter(status='CHRONIC').count()
+    
+    # Team comparison (for admins) - includes ALL injuries
     team_comparison = []
     if request.user.role == 'ADMIN':
         for team in Team.objects.all():
+            # Apply same date filters to team comparison
             team_injuries = InjuryRecord.objects.filter(player__team=team)
+            if date_from:
+                try:
+                    from datetime import datetime
+                    date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+                    team_injuries = team_injuries.filter(injury_date__gte=date_from_obj)
+                except (ValueError, TypeError):
+                    pass
+            if date_to:
+                try:
+                    from datetime import datetime
+                    date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+                    team_injuries = team_injuries.filter(injury_date__lte=date_to_obj)
+                except (ValueError, TypeError):
+                    pass
+            if not date_from and not date_to:
+                team_injuries = team_injuries.filter(injury_date__year=selected_year)
+            
             team_comparison.append({
                 'team': team.name,
-                'total_injuries': team_injuries.count(),
+                'total_injuries': team_injuries.count(),  # ALL injuries
                 'active_injuries': team_injuries.filter(status='ACTIVE').count(),
+                'recovering_injuries': team_injuries.filter(status='RECOVERING').count(),
                 'recovered_injuries': team_injuries.filter(status='RECOVERED').count(),
+                'chronic_injuries': team_injuries.filter(status='CHRONIC').count(),
             })
+    
+    # Get available years for dropdown (from injury dates in database)
+    available_years = sorted(
+        set(InjuryRecord.objects.values_list('injury_date__year', flat=True).distinct()),
+        reverse=True
+    )
+    if not available_years:
+        available_years = [timezone.now().year]
     
     context = {
         'monthly_data': json.dumps(monthly_data),
+        'monthly_injuries_detail': json.dumps(monthly_injuries_detail),  # Player details for monthly chart
         'injury_type_data': json.dumps(list(injury_type_data)),
+        'injury_type_details': json.dumps(injury_type_details),  # Player details for injury type chart
         'body_part_data': json.dumps(list(body_part_data)),
+        'body_part_details': json.dumps(body_part_details),  # Player details for body part chart
         'severity_data': json.dumps(list(severity_data)),
         'avg_recovery_time': avg_recovery_time,
         'team_comparison': team_comparison,
-        'current_year': current_year,
+        'selected_year': selected_year,
+        'date_from': date_from,
+        'date_to': date_to,
         'selected_team': team_filter,
         'teams': Team.objects.all() if request.user.role == 'ADMIN' else None,
+        'available_years': available_years,
+        # Statistics showing ALL injuries are included
+        'total_injuries': total_injuries,
+        'active_count': active_count,
+        'recovering_count': recovering_count,
+        'recovered_count': recovered_count,
+        'chronic_count': chronic_count,
+        'status_breakdown': status_breakdown,
+        # Detailed injury list with player information
+        'all_injuries_detail': all_injuries_detail,
     }
     
     return render(request, 'injury_tracking/analytics.html', context)
